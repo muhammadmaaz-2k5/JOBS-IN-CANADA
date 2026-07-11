@@ -22,7 +22,22 @@ class CategoryGridWidget extends StatelessWidget {
         return Color(int.parse(hex, radix: 16));
       }
     } catch (_) {}
-    return fallback;
+  Color _contrastColorFor(String? hexString, Color fallback) {
+    if (hexString == null || hexString.isEmpty) return fallback;
+    final cleanHex = hexString.replaceAll('#', '').toLowerCase();
+    switch (cleanHex) {
+      case 'f3e8ff': return const Color(0xFF7C3AED); // Design -> dark purple
+      case 'fef3c7': return const Color(0xFFD97706); // Marketing -> dark amber
+      case 'dbeafe': return const Color(0xFF2563EB); // Engineering -> dark blue
+      case 'dcfce7': return const Color(0xFF15803D); // Product -> dark green
+      case 'ffedd5': return const Color(0xFFEA580C); // Data -> dark orange
+      case 'f0fdf4': return const Color(0xFF16A34A); // Finance -> dark green
+      case 'fff1f2': return const Color(0xFFE11D48); // Healthcare -> dark rose
+      case 'f8fafc': return const Color(0xFF475569); // Legal -> dark slate
+      case 'eff6ff': return const Color(0xFF1D4ED8); // Sales -> dark blue
+      case 'fff7ed': return const Color(0xFFC2410C); // Education -> dark orange
+      default: return fallback;
+    }
   }
 
   @override
@@ -43,7 +58,7 @@ class CategoryGridWidget extends StatelessWidget {
         itemBuilder: (_, i) {
           final cat = categories[i];
           final color = _parseHexColor(cat['color'] as String?, Colors.grey.shade100);
-          final iconColor = _parseHexColor(cat['iconColor'] as String?, theme.colorScheme.primary);
+          final iconColor = _contrastColorFor(cat['color'] as String?, theme.colorScheme.primary);
           final countVal = cat['count'] != null ? '${cat['count']}' : '0';
 
           return GestureDetector(

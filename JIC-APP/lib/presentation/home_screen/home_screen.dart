@@ -13,6 +13,7 @@ import './widgets/home_search_bar_widget.dart';
 import './widgets/recommended_card_widget.dart';
 import './widgets/today_jobs_banner_widget.dart';
 import './widgets/top_companies_widget.dart';
+import '../../widgets/custom_icon_widget.dart';
 
 // TODO: Replace with Riverpod/Bloc for production state management
 
@@ -166,28 +167,35 @@ class _HomeScreenState extends State<HomeScreen> {
                           orElse: () => <String, dynamic>{},
                         );
                         final iconName = catMap['icon'] as String?;
+                        final catColor = catMap['color'] as String?;
+                        final iconColor = _getContrastColor(catColor, theme, isSelected);
 
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: FilterChip(
-                            avatar: iconName != null
-                                ? CustomIconWidget(
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (iconName != null) ...[
+                                  CustomIconWidget(
                                     iconName: iconName,
+                                    color: iconColor,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 6),
+                                ] else if (cat == 'All') ...[
+                                  Icon(
+                                    Icons.apps_rounded,
                                     color: isSelected
                                         ? theme.colorScheme.primary
                                         : theme.colorScheme.onSurfaceVariant,
                                     size: 16,
-                                  )
-                                : cat == 'All'
-                                    ? Icon(
-                                        Icons.apps_rounded,
-                                        color: isSelected
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.onSurfaceVariant,
-                                        size: 16,
-                                      )
-                                    : null,
-                            label: Text(cat),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                Text(cat),
+                              ],
+                            ),
                             selected: isSelected,
                             onSelected: (_) {
                               setState(() => _selectedCategory = cat);
@@ -444,6 +452,23 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  Color _getContrastColor(String? hexString, ThemeData theme, bool isSelected) {
+    if (isSelected) return theme.colorScheme.primary;
+    if (hexString == null || hexString.isEmpty) return theme.colorScheme.onSurfaceVariant;
+    final cleanHex = hexString.replaceAll('#', '').toLowerCase();
+    switch (cleanHex) {
+      case 'f3e8ff': return const Color(0xFF7C3AED); // Design -> dark purple
+      case 'fef3c7': return const Color(0xFFD97706); // Marketing -> dark amber
+      case 'dbeafe': return const Color(0xFF2563EB); // Engineering -> dark blue
+      case 'dcfce7': return const Color(0xFF15803D); // Product -> dark green
+      case 'ffedd5': return const Color(0xFFEA580C); // Data -> dark orange
+      case 'f0fdf4': return const Color(0xFF16A34A); // Finance -> dark green
+      case 'fff1f2': return const Color(0xFFE11D48); // Healthcare -> dark rose
+      case 'f8fafc': return const Color(0xFF475569); // Legal -> dark slate
+      case 'eff6ff': return const Color(0xFF1D4ED8); // Sales -> dark blue
+      case 'fff7ed': return const Color(0xFFC2410C); // Education -> dark orange
+      default: return theme.colorScheme.onSurfaceVariant;
+    }
   }
 }
 
