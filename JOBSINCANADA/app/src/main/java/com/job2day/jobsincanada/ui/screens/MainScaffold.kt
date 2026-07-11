@@ -26,6 +26,7 @@ fun MainScaffold(
     initialTab: Int = 0
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
+    var searchQueryState by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -57,7 +58,12 @@ fun MainScaffold(
                 // Search Tab
                 NavigationBarItem(
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
+                    onClick = {
+                        if (selectedTab != 1) {
+                            searchQueryState = null
+                        }
+                        selectedTab = 1
+                    },
                     icon = {
                         Icon(
                             imageVector = if (selectedTab == 1) Icons.Filled.Search else Icons.Outlined.Search,
@@ -107,18 +113,23 @@ fun MainScaffold(
                 0 -> HomeScreen(
                     onNavigateToJobDetail = onNavigateToJobDetail,
                     onNavigateToSearch = { query ->
-                        // Switch to search tab with initial search query
+                        searchQueryState = query
                         selectedTab = 1
-                        // Wait, we can pass state to SearchScreen easily via a shared state in a real app,
-                        // or by exposing simple flow/ViewModel. We'll handle it nicely inside MainActivity.
                     }
                 )
                 1 -> JobSearchScreen(
-                    onNavigateToJobDetail = onNavigateToJobDetail
+                    onNavigateToJobDetail = onNavigateToJobDetail,
+                    initialQuery = searchQueryState,
+                    onConsumeInitialQuery = {
+                        searchQueryState = null
+                    }
                 )
                 2 -> SavedScreen(
                     onNavigateToJobDetail = onNavigateToJobDetail,
-                    onNavigateToSearch = { selectedTab = 1 }
+                    onNavigateToSearch = {
+                        searchQueryState = null
+                        selectedTab = 1
+                    }
                 )
             }
         }

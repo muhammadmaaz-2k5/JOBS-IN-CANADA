@@ -29,16 +29,16 @@ class JobBoardSeeder extends Seeder
         }
 
         $companies = [
-            ['name' => 'Shopify', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_1fd7282dc-1772974660577.png', 'website' => 'https://www.shopify.com', 'sort_order' => 1],
-            ['name' => 'Wealthsimple', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_1ed3b6573-1783736379632.png', 'website' => 'https://www.wealthsimple.com', 'sort_order' => 2],
-            ['name' => 'Figma', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_14898759e-1772037482288.png', 'website' => 'https://www.figma.com', 'sort_order' => 3],
-            ['name' => 'Microsoft', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_174ad6426-1783736379527.png', 'website' => 'https://careers.microsoft.com', 'sort_order' => 4],
-            ['name' => 'Airbnb', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_19ed1076f-1783736379938.png', 'website' => 'https://careers.airbnb.com', 'sort_order' => 5],
-            ['name' => 'Spotify', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_1da815be6-1769423589184.png', 'website' => 'https://www.spotify.com', 'sort_order' => 6],
-            ['name' => 'Apple', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_19ec829ac-1783736379750.png', 'website' => 'https://www.apple.com', 'sort_order' => 7],
-            ['name' => 'Slack', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_18b173690-1768637023216.png', 'website' => 'https://slack.com', 'sort_order' => 8],
-            ['name' => 'Notion', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_1caac3b51-1772623965291.png', 'website' => 'https://www.notion.so', 'sort_order' => 9],
-            ['name' => 'RBC', 'logo' => 'https://img.rocket.new/generatedImages/rocket_gen_img_1cfdd4e14-1783736379911.png', 'website' => 'https://www.rbc.com', 'sort_order' => 10],
+            ['name' => 'Shopify', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Shopify_Logo.png', 'website' => 'https://www.shopify.com', 'sort_order' => 1],
+            ['name' => 'Wealthsimple', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Wealthsimple_logo.svg/512px-Wealthsimple_logo.svg.png', 'website' => 'https://www.wealthsimple.com', 'sort_order' => 2],
+            ['name' => 'Figma', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Figma-logo.svg/400px-Figma-logo.svg.png', 'website' => 'https://www.figma.com', 'sort_order' => 3],
+            ['name' => 'Microsoft', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/512px-Microsoft_logo.svg.png', 'website' => 'https://careers.microsoft.com', 'sort_order' => 4],
+            ['name' => 'Airbnb', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/512px-Airbnb_Logo_B%C3%A9lo.svg.png', 'website' => 'https://careers.airbnb.com', 'sort_order' => 5],
+            ['name' => 'Spotify', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/512px-Spotify_logo_without_text.svg.png', 'website' => 'https://www.spotify.com', 'sort_order' => 6],
+            ['name' => 'Apple', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/512px-Apple_logo_black.svg.png', 'website' => 'https://www.apple.com', 'sort_order' => 7],
+            ['name' => 'Slack', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/512px-Slack_icon_2019.svg.png', 'website' => 'https://slack.com', 'sort_order' => 8],
+            ['name' => 'Notion', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Notion-logo.png', 'website' => 'https://www.notion.so', 'sort_order' => 9],
+            ['name' => 'RBC', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Royal_Bank_of_Canada_Logo.svg/512px-Royal_Bank_of_Canada_Logo.svg.png', 'website' => 'https://www.rbc.com', 'sort_order' => 10],
         ];
         foreach ($companies as $c) {
             Company::updateOrCreate(['name' => $c['name']], $c);

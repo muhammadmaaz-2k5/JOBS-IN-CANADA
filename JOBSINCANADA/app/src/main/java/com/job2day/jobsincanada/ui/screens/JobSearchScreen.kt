@@ -1,9 +1,11 @@
 package com.job2day.jobsincanada.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -16,6 +18,8 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,7 +47,8 @@ import kotlinx.coroutines.launch
 fun JobSearchScreen(
     onNavigateToJobDetail: (JobListing) -> Unit,
     modifier: Modifier = Modifier,
-    initialQuery: String? = null
+    initialQuery: String? = null,
+    onConsumeInitialQuery: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -60,6 +65,9 @@ fun JobSearchScreen(
     var currentPage by remember { mutableStateOf(1) }
     var lastPage by remember { mutableStateOf(1) }
     var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var inputUrl by remember { mutableStateOf(ApiService.getBaseUrl()) }
 
     var isFilterOpen by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
@@ -71,6 +79,7 @@ fun JobSearchScreen(
                 jobsList.clear()
             }
             isLoading = true
+            errorMessage = null
             try {
                 // Fetch categories for filter sheet
                 if (categories.isEmpty()) {
@@ -84,6 +93,7 @@ fun JobSearchScreen(
                 val jobType = if (!types.isNullOrEmpty()) types.firstOrNull() as? String else null
                 val provinces = activeFilters["province"] as? List<*>
                 val province = if (!provinces.isNullOrEmpty()) provinces.firstOrNull() as? String else null
+                val today = activeFilters["todayOnly"] as? Boolean
                 val minSalary = if (activeFilters["highSalary"] == true) 100000 else null
 
                 val results = ApiService.getJobs(
@@ -92,6 +102,7 @@ fun JobSearchScreen(
                     remote = remote,
                     type = jobType,
                     province = province,
+                    today = today,
                     minSalary = minSalary,
                     page = currentPage,
                     perPage = 20
@@ -109,6 +120,7 @@ fun JobSearchScreen(
                 jobsList.addAll(data)
             } catch (e: Exception) {
                 e.printStackTrace()
+                errorMessage = e.message ?: "Failed to connect to the server."
             } finally {
                 isLoading = false
             }
@@ -119,6 +131,13 @@ fun JobSearchScreen(
     LaunchedEffect(key1 = query) {
         delay(350)
         fetchJobs(isRefresh = true)
+    }
+
+    LaunchedEffect(key1 = initialQuery) {
+        if (initialQuery != null) {
+            query = initialQuery
+            onConsumeInitialQuery()
+        }
     }
 
     // Listen to scroll to load next page
@@ -160,11 +179,13 @@ fun JobSearchScreen(
     val activeFilterCount = remember(activeFilters) {
         var count = 0
         if (activeFilters["remoteOnly"] == true) count++
+        if (activeFilters["todayOnly"] == true) count++
+        if (activeFilters["highSalary"] == true) count++
         if (activeFilters["category"] != null) count++
         val types = activeFilters["jobType"] as? List<*>
-        if (!types.isNullOrEmpty()) count += types.size
+        if (!types.isNullOrEmpty()) count++
         val provinces = activeFilters["province"] as? List<*>
-        if (!provinces.isNullOrEmpty()) count += provinces.size
+        if (!provinces.isNullOrEmpty()) count++
         count
     }
 
@@ -351,6 +372,31 @@ fun JobSearchScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
+                    // Quick chip: Today
+                    val isTodaySelected = activeFilters["todayOnly"] == true
+                    val todayBg = if (isTodaySelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(todayBg)
+                            .clickable {
+                                val nextFilters = activeFilters.toMutableMap()
+                                nextFilters["todayOnly"] = !isTodaySelected
+                                activeFilters = nextFilters
+                                fetchJobs(isRefresh = true)
+                            }
+                            .padding(horizontal = 14.dp, vertical = 7.dp)
+                    ) {
+                        Text(
+                            text = "Today",
+                            style = Typography.labelMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isTodaySelected) MaterialTheme.colorScheme.primary else Color(0xFF111827)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     // Quick chip: High Salary
                     val isHighSalarySelected = activeFilters["highSalary"] == true
                     val salaryBg = if (isHighSalarySelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
@@ -385,7 +431,105 @@ fun JobSearchScreen(
         ) {
             val jobs = sortedJobs.value
             
-            if (isLoading && jobs.isEmpty()) {
+            if (errorMessage != null && jobs.isEmpty()) {
+                // Connection Error State
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                        .align(Alignment.Center)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp).fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.errorContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CloudOff,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "Connection Error",
+                            style = Typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Failed to connect to the Jobs in Canada API server. Make sure the Laravel backend is running and the URL is configured correctly.",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = errorMessage ?: "",
+                            style = Typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Current URL: ${ApiService.getBaseUrl()}",
+                            style = Typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedButton(
+                                onClick = { 
+                                    inputUrl = ApiService.getBaseUrl()
+                                    showSettingsDialog = true 
+                                },
+                                shape = RoundedCornerShape(100.dp),
+                                modifier = Modifier.weight(1f).height(48.dp)
+                            ) {
+                                Text("Configure IP")
+                            }
+
+                            Button(
+                                onClick = { fetchJobs(isRefresh = true) },
+                                shape = RoundedCornerShape(100.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier.weight(1f).height(48.dp)
+                            ) {
+                                Text("Try Again", color = Color.White)
+                            }
+                        }
+                    }
+                }
+            } else if (isLoading && jobs.isEmpty()) {
                 // Skeleton Loader
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -461,6 +605,44 @@ fun JobSearchScreen(
                     fetchJobs(isRefresh = true)
                 },
                 onDismissRequest = { isFilterOpen = false }
+            )
+        }
+
+        // Settings Dialog
+        if (showSettingsDialog) {
+            AlertDialog(
+                onDismissRequest = { showSettingsDialog = false },
+                title = { Text("API Server Configuration", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column {
+                        Text("Specify the base API URL for the Jobs In Canada server:", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = inputUrl,
+                            onValueChange = { inputUrl = it },
+                            label = { Text("Base URL") },
+                            placeholder = { Text("e.g. http://10.0.2.2:8000/api") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            ApiService.updateBaseUrl(context, inputUrl)
+                            showSettingsDialog = false
+                            fetchJobs(isRefresh = true)
+                        }
+                    ) {
+                        Text("Save & Retry")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showSettingsDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
     }

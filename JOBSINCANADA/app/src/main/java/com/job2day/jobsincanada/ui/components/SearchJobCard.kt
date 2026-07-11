@@ -63,6 +63,7 @@ fun SearchJobCard(
                 ) {
                     CompanyLogo(
                         companyName = job.company,
+                        logoUrl = job.companyLogo,
                         size = 46.dp,
                         cornerRadius = 12.dp
                     )

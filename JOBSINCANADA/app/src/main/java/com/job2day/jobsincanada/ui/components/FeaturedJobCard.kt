@@ -56,6 +56,7 @@ fun FeaturedJobCard(
             ) {
                 CompanyLogo(
                     companyName = job.company,
+                    logoUrl = job.companyLogo,
                     size = 44.dp,
                     cornerRadius = 12.dp
                 )

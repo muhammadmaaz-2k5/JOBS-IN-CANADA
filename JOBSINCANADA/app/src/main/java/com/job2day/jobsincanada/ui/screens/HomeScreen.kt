@@ -1,5 +1,8 @@
 package com.job2day.jobsincanada.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,10 +12,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
@@ -45,6 +53,8 @@ fun HomeScreen(
 
     var isLoading by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf("All") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
     var companies by remember { mutableStateOf<List<Company>>(emptyList()) }
@@ -55,9 +65,12 @@ fun HomeScreen(
     var jobsTodayCount by remember { mutableStateOf(0) }
     var jobsThisWeekCount by remember { mutableStateOf(0) }
 
+    var inputUrl by remember { mutableStateOf(ApiService.getBaseUrl()) }
+
     fun loadHomeData() {
         coroutineScope.launch {
             isLoading = true
+            errorMessage = null
             try {
                 categories = ApiService.getCategories()
                 companies = ApiService.getCompanies()
@@ -83,6 +96,7 @@ fun HomeScreen(
                 recommendedJobs.forEach { it.isSaved = savedIds.contains(it.id) }
             } catch (e: Exception) {
                 e.printStackTrace()
+                errorMessage = e.message ?: "Failed to connect to the server."
             } finally {
                 isLoading = false
             }
@@ -109,21 +123,21 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp)
         ) {
-            // Profile image container
+            // Work icon container
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "M",
-                    style = Typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                Icon(
+                    imageVector = Icons.Filled.Work,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
                 )
             }
             
@@ -133,15 +147,16 @@ fun HomeScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Welcome Back",
-                    style = Typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "Jobs in Canada",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Muhammad Maaz",
-                    style = Typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = "Find your next role",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -149,7 +164,7 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
@@ -157,25 +172,193 @@ fun HomeScreen(
                     imageVector = Icons.Outlined.Notifications,
                     contentDescription = "Notifications",
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(22.dp)
                 )
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 8.dp, end = 8.dp)
+                        .padding(top = 6.dp, end = 6.dp)
                         .size(8.dp)
                         .clip(CircleShape)
-                        .background(Color.Red)
+                        .background(Color(0xFFDC2626))
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Settings button to configure server IP
+            IconButton(
+                onClick = { 
+                    inputUrl = ApiService.getBaseUrl()
+                    showSettingsDialog = true 
+                },
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "API Settings",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
 
-        // Scrollable Body
-        Column(
+        // Settings Dialog
+        if (showSettingsDialog) {
+            AlertDialog(
+                onDismissRequest = { showSettingsDialog = false },
+                title = { Text("API Server Configuration", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column {
+                        Text("Specify the base API URL for the Jobs In Canada server:", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = inputUrl,
+                            onValueChange = { inputUrl = it },
+                            label = { Text("Base URL") },
+                            placeholder = { Text("e.g. http://10.0.2.2:8000/api") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            ApiService.updateBaseUrl(context, inputUrl)
+                            showSettingsDialog = false
+                            loadHomeData()
+                        }
+                    ) {
+                        Text("Save & Retry")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showSettingsDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
+                .weight(1f),
+            contentAlignment = Alignment.Center
         ) {
+            if (isLoading && categories.isEmpty() && featuredJobs.isEmpty()) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp)
+                )
+            } else if (errorMessage != null && categories.isEmpty() && featuredJobs.isEmpty()) {
+                // Connection Error State
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp).fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.errorContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CloudOff,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "Connection Error",
+                            style = Typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Failed to connect to the Jobs in Canada API server. Make sure the Laravel backend is running and the URL is configured correctly.",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = errorMessage ?: "",
+                            style = Typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Current URL: ${ApiService.getBaseUrl()}",
+                            style = Typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedButton(
+                                onClick = { 
+                                    inputUrl = ApiService.getBaseUrl()
+                                    showSettingsDialog = true 
+                                },
+                                shape = RoundedCornerShape(100.dp),
+                                modifier = Modifier.weight(1f).height(48.dp)
+                            ) {
+                                Text("Configure IP")
+                            }
+
+                            Button(
+                                onClick = { loadHomeData() },
+                                shape = RoundedCornerShape(100.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier.weight(1f).height(48.dp)
+                            ) {
+                                Text("Try Again", color = Color.White)
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Scrollable Body
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                ) {
             Spacer(modifier = Modifier.height(12.dp))
             
             // Welcome Section
@@ -203,13 +386,17 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
+                    .height(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(MaterialTheme.colorScheme.background)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                     .clickable { onNavigateToSearch(null) }
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .padding(horizontal = 14.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -219,10 +406,32 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "Search jobs, companies, keywords...",
+                        text = "Search jobs, companies, skills...",
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Tune,
+                            contentDescription = "Filter",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Filter",
+                            style = Typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
@@ -423,6 +632,7 @@ fun HomeScreen(
                             ) {
                                 CompanyLogo(
                                     companyName = company.name,
+                                    logoUrl = company.logoUrl,
                                     size = 56.dp,
                                     cornerRadius = 28.dp // fully circular fallback
                                 )
@@ -508,7 +718,16 @@ fun HomeScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { /* Handle Resource Tap */ }
+                                    .clickable {
+                                        if (!res.url.isNullOrEmpty()) {
+                                            try {
+                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(res.url))
+                                                context.startActivity(intent)
+                                            } catch (e: java.lang.Exception) {
+                                                android.widget.Toast.makeText(context, "Could not open link", android.widget.Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
                                     .padding(horizontal = 16.dp, vertical = 14.dp)
                             ) {
                                 Box(
@@ -566,4 +785,6 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
+}
 }

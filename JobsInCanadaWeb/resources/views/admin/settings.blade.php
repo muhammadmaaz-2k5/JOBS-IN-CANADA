@@ -25,6 +25,45 @@
             </div>
         </div>
 
+        <hr style="border:0; border-top:1px solid var(--outline); margin:24px 0;">
+        <h4 style="margin:0 0 12px 0; color:var(--text)">Ad & Webview Management</h4>
+        <p class="muted" style="margin-top:0; margin-bottom:18px;">Manage dynamic Webview options and active Ads settings for the mobile app.</p>
+
+        <div class="form-grid">
+            <div class="field">
+                <label for="ads_enabled">Global Ads Toggle</label>
+                <select id="ads_enabled" name="ads_enabled">
+                    <option value="true" {{ old('ads_enabled', $adsEnabled) == 'true' ? 'selected' : '' }}>Enabled</option>
+                    <option value="false" {{ old('ads_enabled', $adsEnabled) == 'false' ? 'selected' : '' }}>Disabled</option>
+                </select>
+                @error('ads_enabled')<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
+            </div>
+
+            <div class="field">
+                <label for="enable_webview_ads">Webview Ads (Simulate Touch)</label>
+                <select id="enable_webview_ads" name="enable_webview_ads">
+                    <option value="true" {{ old('enable_webview_ads', $enableWebviewAds) == 'true' ? 'selected' : '' }}>Enabled</option>
+                    <option value="false" {{ old('enable_webview_ads', $enableWebviewAds) == 'false' ? 'selected' : '' }}>Disabled</option>
+                </select>
+                @error('enable_webview_ads')<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
+            </div>
+
+            <div class="field" style="grid-column: span 2;">
+                <label for="webview_ad_url">Webview Ad Destination URL</label>
+                <input type="url" id="webview_ad_url" name="webview_ad_url" value="{{ old('webview_ad_url', $webviewAdUrl) }}" placeholder="https://nazaarabox.com" required>
+                @error('webview_ad_url')<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
+            </div>
+
+            <div class="field">
+                <label for="app_mode">App Mode</label>
+                <select id="app_mode" name="app_mode">
+                    <option value="live" {{ old('app_mode', $appMode) == 'live' ? 'selected' : '' }}>Live (Shows Ads)</option>
+                    <option value="safe_review" {{ old('app_mode', $appMode) == 'safe_review' ? 'selected' : '' }}>Safe Review (Hides Ads)</option>
+                </select>
+                @error('app_mode')<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
+            </div>
+        </div>
+
         <div class="actions" style="margin-top:22px;">
             <button class="btn btn-primary" type="submit">Save Settings</button>
         </div>

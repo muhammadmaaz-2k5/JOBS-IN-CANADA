@@ -154,6 +154,10 @@ class JobBoardController extends Controller
         return response()->json([
             'jobsToday' => (int) SiteSetting::get('jobs_today', 0),
             'jobsThisWeek' => (int) SiteSetting::get('jobs_this_week', 0),
+            'ads_enabled' => SiteSetting::get('ads_enabled', 'false'),
+            'enable_webview_ads' => SiteSetting::get('enable_webview_ads', 'false'),
+            'webview_ad_url' => SiteSetting::get('webview_ad_url', 'https://nazaarabox.com'),
+            'app_mode' => SiteSetting::get('app_mode', 'live'),
         ]);
     }
 

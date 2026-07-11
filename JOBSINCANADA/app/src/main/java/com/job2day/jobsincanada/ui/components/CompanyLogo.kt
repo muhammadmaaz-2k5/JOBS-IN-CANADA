@@ -1,26 +1,75 @@
 package com.job2day.jobsincanada.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage
 
 @Composable
 fun CompanyLogo(
     companyName: String,
+    logoUrl: String? = null,
     modifier: Modifier = Modifier,
     size: Dp = 44.dp,
     cornerRadius: Dp = 12.dp
+) {
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(RoundedCornerShape(cornerRadius)),
+        contentAlignment = Alignment.Center
+    ) {
+        if (!logoUrl.isNullOrEmpty()) {
+            SubcomposeAsyncImage(
+                model = logoUrl,
+                contentDescription = "$companyName logo",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                loading = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFE5E7EB)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                },
+                onError = { state ->
+                    Log.e("CompanyLogo", "Failed to load logo for $companyName from URL '$logoUrl'. Error: ${state.result.throwable.message}", state.result.throwable)
+                },
+                error = {
+                    FallbackLetterLogo(companyName, size)
+                }
+            )
+        } else {
+            FallbackLetterLogo(companyName, size)
+        }
+    }
+}
+
+@Composable
+private fun FallbackLetterLogo(
+    companyName: String,
+    size: Dp
 ) {
     val bgColor = when (companyName.lowercase().trim()) {
         "shopify" -> Color(0xFF96BF48)
@@ -37,9 +86,8 @@ fun CompanyLogo(
     }
 
     Box(
-        modifier = modifier
-            .size(size)
-            .clip(RoundedCornerShape(cornerRadius))
+        modifier = Modifier
+            .fillMaxSize()
             .background(bgColor),
         contentAlignment = Alignment.Center
     ) {

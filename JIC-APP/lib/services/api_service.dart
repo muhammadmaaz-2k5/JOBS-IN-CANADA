@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:jobincanada/services/ad_manager.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -168,7 +169,15 @@ class ApiService {
     try {
       final response = await _dio.get('/settings');
       if (response.data is Map<String, dynamic>) {
-        return response.data;
+        final settingsData = response.data as Map<String, dynamic>;
+        
+        final Map<String, String> stringSettings = {};
+        settingsData.forEach((key, value) {
+          stringSettings[key] = value.toString();
+        });
+        AdManager.applySettings(stringSettings);
+        
+        return settingsData;
       }
       return {};
     } catch (e) {

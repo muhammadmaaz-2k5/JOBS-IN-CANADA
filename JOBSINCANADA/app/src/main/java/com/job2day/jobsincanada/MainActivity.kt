@@ -21,6 +21,7 @@ enum class AppScreen {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.job2day.jobsincanada.data.ApiService.initialize(applicationContext)
         enableEdgeToEdge()
         setContent {
             JOBSINCANADATheme {

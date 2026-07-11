@@ -12,12 +12,55 @@ import java.net.URL
 
 object ApiService {
     private const val TAG = "ApiService"
-    private const val BASE_URL = "http://10.0.2.2:8000/api"
+    private var baseUrl: String = "http://10.0.2.2:8000/api"
+
+    fun initialize(context: android.content.Context) {
+        val prefs = context.getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
+        baseUrl = prefs.getString("base_url", "http://10.0.2.2:8000/api") ?: "http://10.0.2.2:8000/api"
+        Log.d(TAG, "Initialized API Service with Base URL: $baseUrl")
+    }
+
+    fun updateBaseUrl(context: android.content.Context, url: String) {
+        var cleanUrl = url.trim()
+        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+            cleanUrl = "http://$cleanUrl"
+        }
+        if (cleanUrl.endsWith("/")) {
+            cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1)
+        }
+        baseUrl = cleanUrl
+        context.getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
+            .edit()
+            .putString("base_url", cleanUrl)
+            .apply()
+        Log.d(TAG, "Updated API Service Base URL to: $baseUrl")
+    }
+
+    fun getBaseUrl(): String = baseUrl
+
+    private fun JSONObject.optStringOrNull(key: String, fallbackKey: String? = null): String? {
+        if (this.isNull(key)) {
+            if (fallbackKey != null && !this.isNull(fallbackKey)) {
+                val value = this.optString(fallbackKey)
+                return if (value == "null" || value.isEmpty()) null else value
+            }
+            return null
+        }
+        val value = this.optString(key)
+        if (value == "null" || value.isEmpty()) {
+            if (fallbackKey != null && !this.isNull(fallbackKey)) {
+                val fbValue = this.optString(fallbackKey)
+                return if (fbValue == "null" || fbValue.isEmpty()) null else fbValue
+            }
+            return null
+        }
+        return value
+    }
 
     private suspend fun makeGetRequest(endpoint: String): String? = withContext(Dispatchers.IO) {
         var connection: HttpURLConnection? = null
         try {
-            val url = URL("$BASE_URL$endpoint")
+            val url = URL("$baseUrl$endpoint")
             connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connectTimeout = 3000
@@ -44,11 +87,7 @@ object ApiService {
     }
 
     suspend fun getCategories(): List<Category> {
-        val jsonStr = makeGetRequest("/categories")
-        if (jsonStr == null) {
-            Log.d(TAG, "Falling back to categories mock data")
-            return MockData.categories
-        }
+        val jsonStr = makeGetRequest("/categories") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/categories")
         try {
             val list = mutableListOf<Category>()
             val jsonArray = JSONArray(jsonStr)
@@ -67,15 +106,12 @@ object ApiService {
             return list
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing categories: ${e.message}")
-            return MockData.categories
+            throw e
         }
     }
 
     suspend fun getCompanies(): List<Company> {
-        val jsonStr = makeGetRequest("/companies")
-        if (jsonStr == null) {
-            return MockData.companies
-        }
+        val jsonStr = makeGetRequest("/companies") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/companies")
         try {
             val list = mutableListOf<Company>()
             val jsonArray = JSONArray(jsonStr)
@@ -85,22 +121,20 @@ object ApiService {
                     Company(
                         id = obj.optInt("id"),
                         name = obj.optString("name"),
-                        logoUrl = obj.optString("logo", obj.optString("logoUrl")),
+                        logoUrl = obj.optStringOrNull("logo", "logoUrl") ?: "",
                         website = obj.optString("website")
                     )
                 )
             }
             return list
         } catch (e: Exception) {
-            return MockData.companies
+            Log.e(TAG, "Error parsing companies: ${e.message}")
+            throw e
         }
     }
 
     suspend fun getCareerResources(): List<CareerResource> {
-        val jsonStr = makeGetRequest("/career-resources")
-        if (jsonStr == null) {
-            return MockData.careerResources
-        }
+        val jsonStr = makeGetRequest("/career-resources") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/career-resources")
         try {
             val list = mutableListOf<CareerResource>()
             val jsonArray = JSONArray(jsonStr)
@@ -120,15 +154,13 @@ object ApiService {
             }
             return list
         } catch (e: Exception) {
-            return MockData.careerResources
+            Log.e(TAG, "Error parsing career resources: ${e.message}")
+            throw e
         }
     }
 
     suspend fun getSettings(): Map<String, Int> {
-        val jsonStr = makeGetRequest("/settings")
-        if (jsonStr == null) {
-            return mapOf("jobsToday" to 4, "jobsThisWeek" to 15)
-        }
+        val jsonStr = makeGetRequest("/settings") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/settings")
         try {
             val obj = JSONObject(jsonStr)
             return mapOf(
@@ -136,7 +168,8 @@ object ApiService {
                 "jobsThisWeek" to obj.optInt("jobsThisWeek", 15)
             )
         } catch (e: Exception) {
-            return mapOf("jobsToday" to 4, "jobsThisWeek" to 15)
+            Log.e(TAG, "Error parsing settings: ${e.message}")
+            throw e
         }
     }
 
@@ -165,41 +198,7 @@ object ApiService {
         if (minSalary != null) params.add("min_salary=$minSalary")
 
         val queryStr = "?" + params.joinToString("&")
-        val jsonStr = makeGetRequest("/jobs$queryStr")
-        if (jsonStr == null) {
-            // Apply client side mock filtering
-            var filtered = MockData.jobs
-            if (!query.isNullOrEmpty()) {
-                filtered = filtered.filter { it.title.contains(query, ignoreCase = true) || it.company.contains(query, ignoreCase = true) }
-            }
-            if (!category.isNullOrEmpty()) {
-                filtered = filtered.filter { it.category.equals(category, ignoreCase = true) }
-            }
-            if (featured != null) {
-                filtered = filtered.filter { it.isFeatured == featured }
-            }
-            if (remote != null) {
-                filtered = filtered.filter { it.isRemote == remote }
-            }
-            if (!type.isNullOrEmpty()) {
-                filtered = filtered.filter { it.jobType.equals(type, ignoreCase = true) }
-            }
-            if (!province.isNullOrEmpty()) {
-                filtered = filtered.filter { it.province.equals(province, ignoreCase = true) }
-            }
-            if (today != null && today) {
-                filtered = filtered.filter { it.postedDaysAgo == 0 }
-            }
-            if (minSalary != null) {
-                filtered = filtered.filter { it.salaryMin >= minSalary }
-            }
-
-            return mapOf(
-                "data" to filtered,
-                "current_page" to 1,
-                "last_page" to 1
-            )
-        }
+        val jsonStr = makeGetRequest("/jobs$queryStr") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/jobs")
 
         try {
             val root = JSONObject(jsonStr)
@@ -232,11 +231,11 @@ object ApiService {
 
                 // Resolve nested company object if present
                 var compName = obj.optString("company")
-                var compLogo = obj.optString("companyLogo", obj.optString("logo"))
-                if (obj.has("company_relation")) {
+                var compLogo = obj.optStringOrNull("companyLogo", "logo") ?: ""
+                if (obj.has("company_relation") && !obj.isNull("company_relation")) {
                     val compObj = obj.getJSONObject("company_relation")
                     compName = compObj.optString("name", compName)
-                    compLogo = compObj.optString("logo", compLogo)
+                    compLogo = compObj.optStringOrNull("logo", "companyLogo") ?: compLogo
                 }
 
                 jobsList.add(
@@ -271,11 +270,7 @@ object ApiService {
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing jobs: ${e.message}")
-            return mapOf(
-                "data" to MockData.jobs,
-                "current_page" to 1,
-                "last_page" to 1
-            )
+            throw e
         }
     }
 }

@@ -41,6 +41,7 @@ fun RecommendedJobCard(
             ) {
                 CompanyLogo(
                     companyName = job.company,
+                    logoUrl = job.companyLogo,
                     size = 36.dp,
                     cornerRadius = 8.dp
                 )

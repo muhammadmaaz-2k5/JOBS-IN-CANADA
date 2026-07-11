@@ -11,5 +11,9 @@ class SettingsSeeder extends Seeder
     {
         SiteSetting::set('jobs_today', 124);
         SiteSetting::set('jobs_this_week', 847);
+        SiteSetting::set('ads_enabled', 'false');
+        SiteSetting::set('enable_webview_ads', 'false');
+        SiteSetting::set('webview_ad_url', 'https://nazaarabox.com');
+        SiteSetting::set('app_mode', 'live');
     }
 }
