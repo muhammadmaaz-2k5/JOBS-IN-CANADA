@@ -27,7 +27,10 @@
 
             <div class="field">
                 <label for="logo">Logo URL</label>
-                <input type="url" id="logo" name="logo" value="{{ old('logo', $company->logo ?? '') }}" placeholder="https://...">
+                <div class="input-with-button">
+                    <input type="url" id="logo" name="logo" value="{{ old('logo', $company->logo ?? '') }}" placeholder="https://...">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="openLogoLibrary(function(url){ document.getElementById('logo').value = url; })">Library</button>
+                </div>
                 @error('logo')<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
             </div>
 
@@ -53,4 +56,6 @@
         </div>
     </form>
 </div>
+
+@include('admin.partials.logo-library')
 @endsection

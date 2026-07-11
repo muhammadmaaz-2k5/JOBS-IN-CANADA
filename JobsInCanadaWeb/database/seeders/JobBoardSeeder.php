@@ -127,6 +127,7 @@ class JobBoardSeeder extends Seeder
                 'category_id' => $j['category']?->id,
                 'salary' => $j['salary'],
                 'salary_period' => $j['salary_period'],
+                'salary_min' => (int) preg_replace('/[^0-9]/', '', $j['salary']) * 1000,
                 'location' => $j['location'],
                 'province' => $j['province'],
                 'job_type' => $j['job_type'],

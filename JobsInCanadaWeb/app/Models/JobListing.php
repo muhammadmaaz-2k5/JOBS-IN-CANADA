@@ -16,7 +16,7 @@ class JobListing extends Model
         'title', 'slug', 'company_id', 'category_id', 'salary', 'salary_period',
         'location', 'province', 'job_type', 'is_remote', 'is_new', 'applicants',
         'is_featured', 'apply_url', 'description', 'skills', 'company_logo',
-        'company_logo_label', 'applicant_avatars', 'posted_at', 'is_active',
+        'company_logo_label', 'applicant_avatars', 'posted_at', 'is_active', 'salary_min',
     ];
 
     protected $casts = [
@@ -25,6 +25,7 @@ class JobListing extends Model
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'applicants' => 'integer',
+        'salary_min' => 'integer',
         'skills' => 'array',
         'applicant_avatars' => 'array',
         'posted_at' => 'datetime',

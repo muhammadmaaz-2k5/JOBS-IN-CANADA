@@ -32,15 +32,23 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>
                 Categories
             </a>
+            <a class="nav-item {{ request()->routeIs('admin.provinces.*') ? 'active' : '' }}" href="{{ route('admin.provinces.index') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zM12 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+                Provinces
+            </a>
+            <a class="nav-item {{ request()->routeIs('admin.logos.*') ? 'active' : '' }}" href="{{ route('admin.logos.index') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H4zM4 20h16M9 16v4M15 16v4"/></svg>
+                Logos
+            </a>
             <a class="nav-item {{ request()->routeIs('admin.career-resources.*') ? 'active' : '' }}" href="{{ route('admin.career-resources.index') }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>
                 Career Resources
             </a>
 
             <div class="nav-label">System</div>
-            <a class="nav-item {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}" href="{{ route('admin.admins.index') }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0"/></svg>
-                Admins
+            <a class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 8h2l1.5-3 2.5 5 2-4 2 4 2.5-5L19 8h1v8h-2l-1.5 3-2.5-5-2 4-2-4-2.5 5L5 16H4z"/></svg>
+                Settings
             </a>
         </nav>
         <div class="user-box">

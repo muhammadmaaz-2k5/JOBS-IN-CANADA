@@ -1,12 +1,14 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CareerResourceController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\JobListingController;
+use App\Http\Controllers\Admin\LogoController;
+use App\Http\Controllers\Admin\ProvinceController;
+use App\Http\Controllers\Admin\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('admin.dashboard'));
@@ -24,8 +26,10 @@ Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('companies', CompanyController::class);
     Route::resource('jobs', JobListingController::class);
+    Route::resource('provinces', ProvinceController::class);
+    Route::resource('logos', LogoController::class);
     Route::resource('career-resources', CareerResourceController::class);
 
-    Route::resource('admins', AdminUserController::class)
-        ->only(['index', 'store', 'destroy']);
+    Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
 });

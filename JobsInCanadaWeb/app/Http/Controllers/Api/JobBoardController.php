@@ -7,6 +7,8 @@ use App\Models\CareerResource;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\JobListing;
+use App\Models\Province;
+use App\Models\SiteSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,6 +31,15 @@ class JobBoardController extends Controller
             ]);
 
         return response()->json($categories);
+    }
+
+    public function provinces(): JsonResponse
+    {
+        $provinces = Province::orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
+        return response()->json($provinces);
     }
 
     public function companies(): JsonResponse
@@ -86,6 +97,14 @@ class JobBoardController extends Controller
             $query->where('is_new', true);
         }
 
+        if ($request->boolean('today')) {
+            $query->whereDate('posted_at', today());
+        }
+
+        if ($request->filled('min_salary')) {
+            $query->where('salary_min', '>=', (int) $request->min_salary);
+        }
+
         $perPage = min((int) $request->get('per_page', 20), 100);
         $jobs = $query->latest('posted_at')->latest()->paginate($perPage);
 
@@ -130,6 +149,14 @@ class JobBoardController extends Controller
         ]);
     }
 
+    public function settings(): JsonResponse
+    {
+        return response()->json([
+            'jobsToday' => (int) SiteSetting::get('jobs_today', 0),
+            'jobsThisWeek' => (int) SiteSetting::get('jobs_this_week', 0),
+        ]);
+    }
+
     protected function jobToMap(JobListing $job): array
     {
         return [
@@ -140,6 +167,7 @@ class JobBoardController extends Controller
             'companyLogoSemanticLabel' => $job->logoLabel(),
             'salary' => $job->salary,
             'salaryPeriod' => $job->salary_period,
+            'salaryMin' => $job->salary_min,
             'location' => $job->location,
             'jobType' => $job->job_type,
             'isRemote' => (bool) $job->is_remote,

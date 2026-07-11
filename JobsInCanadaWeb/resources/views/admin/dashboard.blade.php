@@ -10,7 +10,8 @@
     <div class="stat"><div class="label">Companies</div><div class="value">{{ $stats['companies'] }}</div><div class="bar" style="background:var(--success)"></div></div>
     <div class="stat"><div class="label">Categories</div><div class="value">{{ $stats['categories'] }}</div><div class="bar" style="background:#a855f7"></div></div>
     <div class="stat"><div class="label">Resources</div><div class="value">{{ $stats['resources'] }}</div><div class="bar" style="background:#0ea5e9"></div></div>
-    <div class="stat"><div class="label">Admins</div><div class="value">{{ $stats['admins'] }}</div><div class="bar" style="background:#64748b"></div></div>
+    <div class="stat"><div class="label">Jobs Today</div><div class="value">{{ $stats['jobs_today'] }}</div><div class="bar" style="background:#dc2626"></div></div>
+    <div class="stat"><div class="label">Jobs This Week</div><div class="value">{{ $stats['jobs_this_week'] }}</div><div class="bar" style="background:#7c3aed"></div></div>
 </div>
 
 <div class="card card-pad">

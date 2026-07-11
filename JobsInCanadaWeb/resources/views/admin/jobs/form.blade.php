@@ -3,6 +3,7 @@
 @php
     $editing = !is_null($job);
     $jobTypes = ['Full-Time', 'Part-Time', 'Contract', 'Internship', 'Freelance'];
+    $skills = old('skills', isset($job) && $job->skills ? $job->skills : []);
 @endphp
 
 @section('page-title', $editing ? 'Edit Job' : 'New Job')
@@ -10,7 +11,7 @@
 
 @section('content')
 <div class="card card-pad" style="max-width:880px;">
-    <form method="POST" action="{{ $editing ? route('admin.jobs.update', $job) : route('admin.jobs.store') }}">
+    <form method="POST" action="{{ $editing ? route('admin.jobs.update', $job) : route('admin.jobs.store') }}" id="jobForm">
         @csrf
         @if ($editing) @method('PUT') @endif
 
@@ -66,13 +67,23 @@
             </div>
 
             <div class="field">
+                <label for="salary_min">Min Salary (numeric) <span class="hint">(for sorting)</span></label>
+                <input type="number" id="salary_min" name="salary_min" value="{{ old('salary_min', $job->salary_min ?? '') }}" min="0" placeholder="e.g. 115000">
+            </div>
+
+            <div class="field">
                 <label for="location">Location</label>
                 <input type="text" id="location" name="location" value="{{ old('location', $job->location ?? '') }}" placeholder="Toronto, ON">
             </div>
 
             <div class="field">
-                <label for="province">Province</label>
-                <input type="text" id="province" name="province" value="{{ old('province', $job->province ?? '') }}" placeholder="Ontario">
+                <label for="province">Province / Territory</label>
+                <select id="province" name="province">
+                    <option value="">— Select —</option>
+                    @foreach ($provinces as $p)
+                        <option value="{{ $p->name }}" @selected(old('province', $job->province ?? '') == $p->name)>{{ $p->name }} ({{ $p->code }})</option>
+                    @endforeach
+                </select>
             </div>
 
             <div class="field">
@@ -97,8 +108,14 @@
             </div>
 
             <div class="field full">
-                <label for="skills">Skills <span class="hint">(comma separated)</span></label>
-                <input type="text" id="skills" name="skills" value="{{ old('skills', isset($job) && $job->skills ? implode(', ', $job->skills) : '') }}" placeholder="Communication, Leadership, Figma">
+                <label>Skills <span class="hint">(type and press Enter; click × to remove)</span></label>
+                <div class="tag-input" id="skillsTags">
+                    @foreach ($skills as $s)
+                        <span class="tag">{{ $s }}<button type="button" class="tag-x" aria-label="Remove">&times;</button></span>
+                    @endforeach
+                    <input type="text" class="tag-field" placeholder="Add a skill…" autocomplete="off">
+                </div>
+                <input type="hidden" name="skills" id="skillsValue" value="{{ implode(', ', $skills) }}">
             </div>
 
             <div class="field full">
@@ -108,7 +125,10 @@
 
             <div class="field full">
                 <label for="company_logo">Company Logo Override URL <span class="hint">(optional)</span></label>
-                <input type="url" id="company_logo" name="company_logo" value="{{ old('company_logo', $job->company_logo ?? '') }}" placeholder="https://...">
+                <div class="input-with-button">
+                    <input type="url" id="company_logo" name="company_logo" value="{{ old('company_logo', $job->company_logo ?? '') }}" placeholder="https://...">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="openLogoLibrary(function(url){ document.getElementById('company_logo').value = url; })">Library</button>
+                </div>
             </div>
 
             <div class="field full">
@@ -132,4 +152,61 @@
         </div>
     </form>
 </div>
+
+@include('admin.partials.logo-library')
+
+<script>
+    (function () {
+        var box = document.getElementById('skillsTags');
+        var input = box.querySelector('.tag-field');
+        var hidden = document.getElementById('skillsValue');
+
+        function sync() {
+            var tags = box.querySelectorAll('.tag');
+            hidden.value = Array.prototype.map.call(tags, function (t) {
+                return t.firstChild.textContent.trim();
+            }).join(', ');
+        }
+
+        function addTag(value) {
+            value = value.trim();
+            if (!value) return;
+            var span = document.createElement('span');
+            span.className = 'tag';
+            span.appendChild(document.createTextNode(value));
+            var x = document.createElement('button');
+            x.type = 'button';
+            x.className = 'tag-x';
+            x.setAttribute('aria-label', 'Remove');
+            x.textContent = '×';
+            x.addEventListener('click', function () {
+                span.remove();
+                sync();
+            });
+            span.appendChild(x);
+            box.insertBefore(span, input);
+            sync();
+        }
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addTag(input.value);
+                input.value = '';
+            } else if (e.key === 'Backspace' && input.value === '') {
+                var tags = box.querySelectorAll('.tag');
+                if (tags.length) {
+                    tags[tags.length - 1].remove();
+                    sync();
+                }
+            }
+        });
+
+        box.addEventListener('click', function (e) {
+            if (e.target === box) input.focus();
+        });
+
+        sync();
+    })();
+</script>
 @endsection

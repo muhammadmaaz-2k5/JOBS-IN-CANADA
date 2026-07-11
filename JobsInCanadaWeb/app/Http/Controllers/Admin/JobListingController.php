@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\JobListing;
+use App\Models\Province;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,11 +38,13 @@ class JobListingController extends Controller
     {
         $companies = Company::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
+        $provinces = Province::orderBy('sort_order')->orderBy('name')->get();
 
         return view('admin.jobs.form', [
             'job' => null,
             'companies' => $companies,
             'categories' => $categories,
+            'provinces' => $provinces,
         ]);
     }
 
@@ -77,8 +80,9 @@ class JobListingController extends Controller
     {
         $companies = Company::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
+        $provinces = Province::orderBy('sort_order')->orderBy('name')->get();
 
-        return view('admin.jobs.form', compact('job', 'companies', 'categories'));
+        return view('admin.jobs.form', compact('job', 'companies', 'categories', 'provinces'));
     }
 
     public function update(Request $request, JobListing $job): RedirectResponse
@@ -110,6 +114,7 @@ class JobListingController extends Controller
             'company_logo_label' => ['nullable', 'string', 'max:255'],
             'salary' => ['nullable', 'string', 'max:60'],
             'salary_period' => ['nullable', 'string', 'max:20'],
+            'salary_min' => ['nullable', 'integer', 'min:0'],
             'location' => ['nullable', 'string', 'max:255'],
             'province' => ['nullable', 'string', 'max:255'],
             'job_type' => ['nullable', 'string', 'max:60'],

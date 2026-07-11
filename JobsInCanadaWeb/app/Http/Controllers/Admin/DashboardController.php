@@ -7,7 +7,7 @@ use App\Models\CareerResource;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\JobListing;
-use App\Models\User;
+use App\Models\SiteSetting;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -21,7 +21,8 @@ class DashboardController extends Controller
             'companies' => Company::count(),
             'categories' => Category::count(),
             'resources' => CareerResource::count(),
-            'admins' => User::where('is_admin', true)->count(),
+            'jobs_today' => (int) SiteSetting::get('jobs_today', 0),
+            'jobs_this_week' => (int) SiteSetting::get('jobs_this_week', 0),
         ];
 
         $recentJobs = JobListing::with(['company', 'category'])
