@@ -48,12 +48,6 @@ class _AppNavigationState extends State<AppNavigation> {
       selectedIcon: Icons.bookmark_rounded,
       branchIndex: 2,
     ),
-    _TabSpec(
-      label: 'Profile',
-      icon: Icons.person_outline_rounded,
-      selectedIcon: Icons.person_rounded,
-      branchIndex: 3,
-    ),
   ];
 
   void _onTabTapped(int visualIndex) {

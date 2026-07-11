@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/app_export.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
-  final String userName;
-  final String userAvatarUrl;
-  final String userAvatarSemanticLabel;
   final int notificationCount;
 
   const HomeAppBarWidget({
-    required this.userName,
-    required this.userAvatarUrl,
-    required this.userAvatarSemanticLabel,
     required this.notificationCount,
     super.key,
   });
@@ -19,42 +14,46 @@ class HomeAppBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final firstName = userName.split(' ').first;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       color: theme.colorScheme.surface,
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: CustomImageWidget(
-              imageUrl: userAvatarUrl,
-              width: 42,
-              height: 42,
-              fit: BoxFit.cover,
-              semanticLabel: userAvatarSemanticLabel,
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: CustomIconWidget(
+                iconName: 'work_rounded',
+                color: theme.colorScheme.primary,
+                size: 22,
+              ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hello, $firstName 👋',
+                  'Jobs in Canada',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
                 Text(
                   'Find your next role',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

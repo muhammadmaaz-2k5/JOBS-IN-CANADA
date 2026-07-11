@@ -117,12 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
             controller: _scrollController,
             slivers: [
               SliverToBoxAdapter(
-                child: HomeAppBarWidget(
-                  userName: 'Priya Sharma',
-                  userAvatarUrl:
-                      'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=80&h=80&fit=crop',
-                  userAvatarSemanticLabel:
-                      'Profile photo of Priya Sharma, South Asian woman with dark hair in professional attire',
+                child: const HomeAppBarWidget(
                   notificationCount: 3,
                 ),
               ),
@@ -166,9 +161,32 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       children: _filterCategories.map((cat) {
                         final isSelected = cat == _selectedCategory;
+                        final catMap = _categories.firstWhere(
+                          (c) => c['label'] == cat,
+                          orElse: () => <String, dynamic>{},
+                        );
+                        final iconName = catMap['icon'] as String?;
+
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: FilterChip(
+                            avatar: iconName != null
+                                ? CustomIconWidget(
+                                    iconName: iconName,
+                                    color: isSelected
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.onSurfaceVariant,
+                                    size: 16,
+                                  )
+                                : cat == 'All'
+                                    ? Icon(
+                                        Icons.apps_rounded,
+                                        color: isSelected
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.onSurfaceVariant,
+                                        size: 16,
+                                      )
+                                    : null,
                             label: Text(cat),
                             selected: isSelected,
                             onSelected: (_) {
