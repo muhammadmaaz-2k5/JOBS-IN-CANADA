@@ -14,6 +14,8 @@ import './widgets/recommended_card_widget.dart';
 import './widgets/today_jobs_banner_widget.dart';
 import './widgets/top_companies_widget.dart';
 import '../../widgets/custom_icon_widget.dart';
+import '../../widgets/custom_ads.dart';
+import '../../services/ad_manager.dart';
 
 // TODO: Replace with Riverpod/Bloc for production state management
 
@@ -83,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _jobsThisWeekCount = settingsData['jobsThisWeek'] as int? ?? 0;
 
           _isLoading = false;
+          _showInterstitialAdIfNeeded();
         });
       }
     } catch (e) {
@@ -90,6 +93,20 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  void _showInterstitialAdIfNeeded() {
+    if (AdManager.isInterstitialAdReady() && AdManager.canShowInterstitial()) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => CustomInterstitialAd(
+          adUrl: AdManager.webviewAdUrl,
+          onDismiss: () => Navigator.of(context).pop(),
+        ),
+      );
+      AdManager.recordInterstitial();
     }
   }
 
@@ -234,6 +251,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   weekCount: _jobsThisWeekCount,
                 ),
               ),
+              const SliverToBoxAdapter(
+                child: FullWidthAdBanner(
+                  placement: 'home_top',
+                ),
+              ),
               // Featured Jobs Section
               SliverToBoxAdapter(
                 child: Padding(
@@ -300,6 +322,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     .toList(),
                               ),
                       ),
+              ),
+              const SliverToBoxAdapter(
+                child: InlineBannerAd(
+                  placement: 'home_middle',
+                ),
               ),
               // Recommended Section
               SliverToBoxAdapter(
@@ -440,6 +467,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _isLoading
                     ? const SizedBox.shrink()
                     : CareerResourcesWidget(resources: _careerResources),
+              ),
+              const SliverToBoxAdapter(
+                child: FullWidthAdBanner(
+                  placement: 'home_bottom',
+                ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
