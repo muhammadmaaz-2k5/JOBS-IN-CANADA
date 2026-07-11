@@ -46,19 +46,19 @@ class _AppNavigationState extends State<AppNavigation> {
       label: 'Saved',
       icon: Icons.bookmark_outline_rounded,
       selectedIcon: Icons.bookmark_rounded,
-      branchIndex: null, // stub tab
+      branchIndex: 2,
     ),
     _TabSpec(
       label: 'Profile',
       icon: Icons.person_outline_rounded,
       selectedIcon: Icons.person_rounded,
-      branchIndex: null, // stub tab
+      branchIndex: 3,
     ),
   ];
 
   void _onTabTapped(int visualIndex) {
     final tab = _tabs[visualIndex];
-    if (tab.branchIndex == null) return; // stub tab — silent ignore
+    if (tab.branchIndex == null) return;
     setState(() => _selectedVisualIndex = visualIndex);
     widget.navigationShell.goBranch(
       tab.branchIndex!,

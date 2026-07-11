@@ -6,8 +6,35 @@
 @section('content')
 <div class="page-head">
     <h2>All Jobs</h2>
-    <a class="btn btn-primary" href="{{ route('admin.jobs.create') }}">+ New Job</a>
+    <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" onclick="document.getElementById('import-dialog').showModal()">JSON Import</button>
+        <a class="btn btn-primary" href="{{ route('admin.jobs.create') }}">+ New Job</a>
+    </div>
 </div>
+
+<dialog id="import-dialog" style="border:none; border-radius:12px; padding:24px; box-shadow: 0 4px 24px rgba(0,0,0,0.15); max-width: 600px; width:100%; font-family:inherit;">
+    <form method="POST" action="{{ route('admin.jobs.import-json') }}">
+        @csrf
+        <h3 style="margin-top:0; margin-bottom:8px;">Import Jobs from JSON</h3>
+        <p style="color:#666; font-size:13px; margin-bottom:16px;">Paste a single job object or a JSON array of job objects. The importer will match/create companies and categories automatically by name.</p>
+        <textarea name="json_data" rows="12" style="width:100%; border:1px solid #ccc; border-radius:6px; padding:12px; font-family:monospace; font-size:12px; resize:vertical; box-sizing:border-box;" placeholder='[
+  {
+    "title": "Senior Flutter Developer",
+    "company": "Google",
+    "category": "Engineering",
+    "location": "Toronto, ON",
+    "salary": "$135K",
+    "job_type": "Full-Time",
+    "is_remote": true,
+    "skills": ["Flutter", "Dart", "GoRouter"]
+  }
+]' required></textarea>
+        <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('import-dialog').close()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Import Jobs</button>
+        </div>
+    </form>
+</dialog>
 
 <form class="search-bar" method="GET">
     <input type="text" name="q" value="{{ request('q') }}" placeholder="Search title or company...">

@@ -135,4 +135,122 @@ class JobListingController extends Controller
 
         return $data;
     }
+
+    public function importJson(Request $request): RedirectResponse
+    {
+        $jsonData = $request->input('json_data');
+
+        if (empty($jsonData)) {
+            return back()->with('error', 'Please provide JSON data.');
+        }
+
+        $json = json_decode($jsonData, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return back()->with('error', 'Invalid JSON structure: ' . json_last_error_msg());
+        }
+
+        // If it's a single job (associative array with a title key directly)
+        $jobsData = isset($json['title']) ? [$json] : $json;
+
+        if (!is_array($jobsData) || empty($jobsData)) {
+            return back()->with('error', 'JSON must be a job object or a non-empty array of job objects.');
+        }
+
+        $importedCount = 0;
+        $errors = [];
+
+        foreach ($jobsData as $index => $item) {
+            if (!is_array($item)) {
+                $errors[] = "Job #" . ($index + 1) . " is not a valid object.";
+                continue;
+            }
+
+            if (!isset($item['title']) || trim($item['title']) === '') {
+                $errors[] = "Job #" . ($index + 1) . " is missing a title.";
+                continue;
+            }
+
+            // Find or create Company by name
+            $companyId = null;
+            if (isset($item['company']) && trim($item['company']) !== '') {
+                $company = Company::firstOrCreate([
+                    'name' => trim($item['company'])
+                ], [
+                    'slug' => \Illuminate\Support\Str::slug($item['company']),
+                ]);
+                $companyId = $company->id;
+            } elseif (isset($item['company_id'])) {
+                $companyId = $item['company_id'];
+            }
+
+            // Find or create Category by name
+            $categoryId = null;
+            if (isset($item['category']) && trim($item['category']) !== '') {
+                $category = Category::firstOrCreate([
+                    'name' => trim($item['category'])
+                ], [
+                    'slug' => \Illuminate\Support\Str::slug($item['category']),
+                ]);
+                $categoryId = $category->id;
+            } elseif (isset($item['category_id'])) {
+                $categoryId = $item['category_id'];
+            }
+
+            // Process skills
+            $skills = null;
+            if (isset($item['skills'])) {
+                if (is_array($item['skills'])) {
+                    $skills = array_values(array_filter(array_map('trim', $item['skills'])));
+                } else {
+                    $skills = $this->prepareSkills($item['skills']);
+                }
+            }
+
+            // Process applicant avatars
+            $avatars = null;
+            if (isset($item['applicant_avatars'])) {
+                if (is_array($item['applicant_avatars'])) {
+                    $avatars = array_values(array_filter(array_map('trim', $item['applicant_avatars'])));
+                } else {
+                    $avatars = $this->prepareAvatars($item['applicant_avatars']);
+                }
+            }
+
+            JobListing::create([
+                'title' => $item['title'],
+                'slug' => $item['slug'] ?? \Illuminate\Support\Str::slug($item['title'] . '-' . uniqid()),
+                'company_id' => $companyId,
+                'category_id' => $categoryId,
+                'company_logo' => $item['company_logo'] ?? $item['companyLogo'] ?? null,
+                'company_logo_label' => $item['company_logo_label'] ?? $item['companyLogoSemanticLabel'] ?? null,
+                'salary' => $item['salary'] ?? null,
+                'salary_period' => $item['salary_period'] ?? 'year',
+                'salary_min' => $item['salary_min'] ?? $item['salaryMin'] ?? 0,
+                'location' => $item['location'] ?? null,
+                'province' => $item['province'] ?? null,
+                'job_type' => $item['job_type'] ?? $item['jobType'] ?? null,
+                'is_remote' => filter_var($item['is_remote'] ?? $item['isRemote'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'is_new' => filter_var($item['is_new'] ?? $item['isNew'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'is_featured' => filter_var($item['is_featured'] ?? $item['isFeatured'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'is_active' => filter_var($item['is_active'] ?? $item['isActive'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'applicants' => $item['applicants'] ?? 0,
+                'apply_url' => $item['apply_url'] ?? $item['applyUrl'] ?? null,
+                'description' => $item['description'] ?? null,
+                'skills' => $skills,
+                'applicant_avatars' => $avatars,
+                'posted_at' => isset($item['posted_at']) ? \Carbon\Carbon::parse($item['posted_at']) : now(),
+            ]);
+
+            $importedCount++;
+        }
+
+        if (count($errors) > 0) {
+            return redirect()->route('admin.jobs.index')
+                ->with('success', "Imported {$importedCount} jobs. Errors: " . implode(' ', $errors));
+        }
+
+        return redirect()->route('admin.jobs.index')
+            ->with('success', "Imported {$importedCount} jobs successfully from JSON.");
+    }
 }

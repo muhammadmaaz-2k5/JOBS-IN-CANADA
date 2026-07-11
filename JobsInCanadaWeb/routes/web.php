@@ -25,6 +25,7 @@ Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
 
     Route::resource('categories', CategoryController::class);
     Route::resource('companies', CompanyController::class);
+    Route::post('jobs/import-json', [JobListingController::class, 'importJson'])->name('jobs.import-json');
     Route::resource('jobs', JobListingController::class);
     Route::resource('provinces', ProvinceController::class);
     Route::resource('logos', LogoController::class);

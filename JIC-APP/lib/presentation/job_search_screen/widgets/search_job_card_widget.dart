@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/app_export.dart';
 import '../../../widgets/status_badge_widget.dart';
+import '../../../services/bookmark_service.dart';
 
 class SearchJobCardWidget extends StatefulWidget {
   final Map<String, dynamic> job;
@@ -31,6 +32,7 @@ class _SearchJobCardWidgetState extends State<SearchJobCardWidget>
   void initState() {
     super.initState();
     _isSaved = widget.job['isSaved'] as bool? ?? false;
+    _checkSavedStatus();
     _entranceController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -52,6 +54,15 @@ class _SearchJobCardWidgetState extends State<SearchJobCardWidget>
     Future.delayed(delay, () {
       if (mounted) _entranceController.forward();
     });
+  }
+
+  Future<void> _checkSavedStatus() async {
+    final status = await BookmarkService.isSaved(widget.job['id'] as int);
+    if (mounted) {
+      setState(() {
+        _isSaved = status;
+      });
+    }
   }
 
   @override
@@ -156,18 +167,26 @@ class _SearchJobCardWidgetState extends State<SearchJobCardWidget>
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => setState(() => _isSaved = !_isSaved),
-                      child: Icon(
-                        _isSaved
-                            ? Icons.bookmark_rounded
-                            : Icons.bookmark_outline_rounded,
-                        color: _isSaved
-                            ? AppTheme.primary
-                            : theme.colorScheme.onSurfaceVariant,
-                        size: 22,
-                      ),
-                    ),
+                     GestureDetector(
+                       onTap: () async {
+                         await BookmarkService.toggleSave(widget.job);
+                         final savedStatus = await BookmarkService.isSaved(widget.job['id'] as int);
+                         if (mounted) {
+                           setState(() {
+                             _isSaved = savedStatus;
+                           });
+                         }
+                       },
+                       child: Icon(
+                         _isSaved
+                             ? Icons.bookmark_rounded
+                             : Icons.bookmark_outline_rounded,
+                         color: _isSaved
+                             ? AppTheme.primary
+                             : theme.colorScheme.onSurfaceVariant,
+                         size: 22,
+                       ),
+                     ),
                   ],
                 ),
                 const SizedBox(height: 10),

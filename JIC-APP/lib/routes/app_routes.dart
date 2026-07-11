@@ -4,12 +4,16 @@ import 'package:go_router/go_router.dart';
 import '../presentation/home_screen/home_screen.dart';
 import '../presentation/job_detail_screen/job_detail_screen.dart';
 import '../presentation/job_search_screen/job_search_screen.dart';
+import '../presentation/saved_screen/saved_screen.dart';
+import '../presentation/profile_screen/profile_screen.dart';
 import '../widgets/app_scaffold.dart';
 
 class AppRoutes {
   static const String initial = '/';
   static const String homeScreen = '/home-screen';
   static const String jobSearchScreen = '/job-search-screen';
+  static const String savedScreen = '/saved-screen';
+  static const String profileScreen = '/profile-screen';
   static const String jobDetailScreen = '/job-detail-screen';
 }
 
@@ -74,6 +78,62 @@ final GoRouter appRouter = GoRouter(
                 child: JobSearchScreen(
                   initialFilters: state.extra as Map<String, dynamic>?,
                 ),
+                transitionDuration: const Duration(milliseconds: 280),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(0.04, 0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
+                        child: FadeTransition(opacity: animation, child: child),
+                      );
+                    },
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.savedScreen,
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: const SavedScreen(),
+                transitionDuration: const Duration(milliseconds: 280),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(0.04, 0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
+                        child: FadeTransition(opacity: animation, child: child),
+                      );
+                    },
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.profileScreen,
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: const ProfileScreen(),
                 transitionDuration: const Duration(milliseconds: 280),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {

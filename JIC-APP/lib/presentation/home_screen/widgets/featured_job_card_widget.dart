@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/app_export.dart';
 import '../../../widgets/status_badge_widget.dart';
+import '../../../services/bookmark_service.dart';
 
 class FeaturedJobCardWidget extends StatefulWidget {
   final Map<String, dynamic> job;
@@ -28,6 +29,7 @@ class _FeaturedJobCardWidgetState extends State<FeaturedJobCardWidget>
   void initState() {
     super.initState();
     _isSaved = widget.job['isSaved'] as bool? ?? false;
+    _checkSavedStatus();
     _scaleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
@@ -35,6 +37,15 @@ class _FeaturedJobCardWidgetState extends State<FeaturedJobCardWidget>
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
       CurvedAnimation(parent: _scaleController, curve: Curves.easeOutCubic),
     );
+  }
+
+  Future<void> _checkSavedStatus() async {
+    final status = await BookmarkService.isSaved(widget.job['id'] as int);
+    if (mounted) {
+      setState(() {
+        _isSaved = status;
+      });
+    }
   }
 
   @override
@@ -161,7 +172,15 @@ class _FeaturedJobCardWidgetState extends State<FeaturedJobCardWidget>
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => setState(() => _isSaved = !_isSaved),
+                    onTap: () async {
+                      await BookmarkService.toggleSave(widget.job);
+                      final savedStatus = await BookmarkService.isSaved(widget.job['id'] as int);
+                      if (mounted) {
+                        setState(() {
+                          _isSaved = savedStatus;
+                        });
+                      }
+                    },
                     child: Icon(
                       _isSaved
                           ? Icons.bookmark_rounded

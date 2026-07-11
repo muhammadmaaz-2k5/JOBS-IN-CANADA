@@ -321,12 +321,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Top Companies Hiring',
                         style: theme.textTheme.titleMedium,
                       ),
-                      Text(
-                        'See All',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
+                      GestureDetector(
+                        onTap: () => context.go(AppRoutes.jobSearchScreen),
+                        child: Text(
+                          'See All',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -357,12 +360,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Job Categories',
                         style: theme.textTheme.titleMedium,
                       ),
-                      Text(
-                        'See All',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
+                      GestureDetector(
+                        onTap: () => context.go(AppRoutes.jobSearchScreen),
+                        child: Text(
+                          'See All',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -394,12 +400,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Career Resources',
                         style: theme.textTheme.titleMedium,
                       ),
-                      Text(
-                        'See All',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
+                      GestureDetector(
+                        onTap: () => context.go(AppRoutes.jobSearchScreen),
+                        child: Text(
+                          'See All',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                       ),
                     ],
