@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/loading_skeleton_widget.dart';
 import './widgets/filter_bottom_sheet_widget.dart';
@@ -13,7 +15,9 @@ import './widgets/search_job_card_widget.dart';
 // TODO: Replace with Riverpod/Bloc for production state management
 
 class JobSearchScreen extends StatefulWidget {
-  const JobSearchScreen({super.key});
+  final Map<String, dynamic>? initialFilters;
+
+  const JobSearchScreen({this.initialFilters, super.key});
 
   @override
   State<JobSearchScreen> createState() => _JobSearchScreenState();
@@ -22,10 +26,16 @@ class JobSearchScreen extends StatefulWidget {
 class _JobSearchScreenState extends State<JobSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final bool _isLoading = false;
+  
+  bool _isLoading = false;
   String _searchQuery = '';
   String _sortBy = 'Relevance';
   Map<String, dynamic> _activeFilters = {};
+  
+  List<Map<String, dynamic>> _jobs = [];
+  int _currentPage = 1;
+  int _lastPage = 1;
+  Timer? _debounce;
 
   final List<String> _sortOptions = [
     'Relevance',
@@ -34,280 +44,116 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
     'Most Applicants',
   ];
 
-  // TODO: Replace with Riverpod/Bloc — fetch from backend
-  final List<Map<String, dynamic>> _allJobMaps = [
-    {
-      'id': 'search_001',
-      'title': 'Senior iOS Developer',
-      'company': 'TD Bank',
-      'companyLogo':
-          'https://images.pexels.com/photos/259249/pexels-photo-259249.jpeg?w=80&h=80&fit=crop',
-      'companyLogoSemanticLabel':
-          'TD Bank financial institution logo with green background',
-      'salary': '\$145K',
-      'salaryMin': 145000,
-      'salaryPeriod': 'year',
-      'location': 'Toronto, ON',
-      'jobType': 'Full-Time',
-      'isRemote': false,
-      'isNew': true,
-      'applicants': 62,
-      'category': 'Engineering',
-      'province': 'Ontario',
-      'postedDaysAgo': 0,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://jobs.td.com',
-      'skills': ['Swift', 'Xcode', 'UIKit', 'Core Data'],
-      'description':
-          'Join TD\'s mobile engineering team to build next-generation banking experiences for millions of Canadians.',
-    },
-    {
-      'id': 'search_002',
-      'title': 'Data Scientist',
-      'company': 'Bombardier',
-      'companyLogo':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_1070c7b03-1783736381221.png',
-      'companyLogoSemanticLabel':
-          'Bombardier aerospace and transportation company logo',
-      'salary': '\$130K',
-      'salaryMin': 130000,
-      'salaryPeriod': 'year',
-      'location': 'Montréal, QC',
-      'jobType': 'Full-Time',
-      'isRemote': false,
-      'isNew': false,
-      'applicants': 38,
-      'category': 'Data',
-      'province': 'Quebec',
-      'postedDaysAgo': 1,
-      'isFeatured': false,
-      'isSaved': true,
-      'applicantAvatars': [],
-      'applyUrl': 'https://jobs.bombardier.com',
-      'skills': ['Python', 'ML', 'SQL', 'Tableau'],
-      'description':
-          'Use machine learning to optimize aircraft manufacturing and supply chain operations.',
-    },
-    {
-      'id': 'search_003',
-      'title': 'Marketing Manager',
-      'company': 'Lululemon',
-      'companyLogo':
-          'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?w=80&h=80&fit=crop',
-      'companyLogoSemanticLabel':
-          'Lululemon athletic apparel brand lifestyle photo',
-      'salary': '\$95K',
-      'salaryMin': 95000,
-      'salaryPeriod': 'year',
-      'location': 'Vancouver, BC',
-      'jobType': 'Full-Time',
-      'isRemote': false,
-      'isNew': false,
-      'applicants': 91,
-      'category': 'Marketing',
-      'province': 'British Columbia',
-      'postedDaysAgo': 2,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://info.lululemon.com/careers',
-      'skills': ['Brand Strategy', 'Digital Marketing', 'Analytics'],
-      'description':
-          'Drive brand awareness and demand generation for Lululemon\'s Canadian market.',
-    },
-    {
-      'id': 'search_004',
-      'title': 'DevOps Engineer',
-      'company': 'Telus',
-      'companyLogo':
-          'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&h=80&fit=crop',
-      'companyLogoSemanticLabel':
-          'Telus telecommunications company logo with purple branding',
-      'salary': '\$125K',
-      'salaryMin': 125000,
-      'salaryPeriod': 'year',
-      'location': 'Calgary, AB',
-      'jobType': 'Full-Time',
-      'isRemote': true,
-      'isNew': true,
-      'applicants': 27,
-      'category': 'Engineering',
-      'province': 'Alberta',
-      'postedDaysAgo': 0,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://www.telus.com/careers',
-      'skills': ['AWS', 'Kubernetes', 'Terraform', 'CI/CD'],
-      'description':
-          'Build and maintain cloud infrastructure powering Canada\'s largest telecom network.',
-    },
-    {
-      'id': 'search_005',
-      'title': 'Product Manager',
-      'company': 'Hootsuite',
-      'companyLogo':
-          'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?w=80&h=80&fit=crop',
-      'companyLogoSemanticLabel':
-          'Hootsuite social media management platform logo',
-      'salary': '\$120K',
-      'salaryMin': 120000,
-      'salaryPeriod': 'year',
-      'location': 'Vancouver, BC',
-      'jobType': 'Full-Time',
-      'isRemote': true,
-      'isNew': false,
-      'applicants': 54,
-      'category': 'Product',
-      'province': 'British Columbia',
-      'postedDaysAgo': 3,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://www.hootsuite.com/careers',
-      'skills': ['Roadmapping', 'Agile', 'Analytics', 'Stakeholder Mgmt'],
-      'description':
-          'Own the product roadmap for Hootsuite\'s core scheduling features used by 18M users.',
-    },
-    {
-      'id': 'search_006',
-      'title': 'Financial Analyst',
-      'company': 'Manulife',
-      'companyLogo':
-          'https://images.pixabay.com/photo/2016/11/27/21/42/stock-1863880_960_720.jpg',
-      'companyLogoSemanticLabel':
-          'Manulife insurance and financial services company logo',
-      'salary': '\$85K',
-      'salaryMin': 85000,
-      'salaryPeriod': 'year',
-      'location': 'Toronto, ON',
-      'jobType': 'Full-Time',
-      'isRemote': false,
-      'isNew': false,
-      'applicants': 73,
-      'category': 'Finance',
-      'province': 'Ontario',
-      'postedDaysAgo': 4,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://careers.manulife.com',
-      'skills': ['Excel', 'Financial Modeling', 'CFA', 'Bloomberg'],
-      'description':
-          'Support investment decisions with financial analysis and market research for Manulife\'s Canadian portfolio.',
-    },
-    {
-      'id': 'search_007',
-      'title': 'Registered Nurse',
-      'company': 'CAMH',
-      'companyLogo':
-          'https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?w=80&h=80&fit=crop',
-      'companyLogoSemanticLabel':
-          'Centre for Addiction and Mental Health hospital facility photo',
-      'salary': '\$88K',
-      'salaryMin': 88000,
-      'salaryPeriod': 'year',
-      'location': 'Toronto, ON',
-      'jobType': 'Full-Time',
-      'isRemote': false,
-      'isNew': false,
-      'applicants': 18,
-      'category': 'Healthcare',
-      'province': 'Ontario',
-      'postedDaysAgo': 1,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://www.camh.ca/careers',
-      'skills': ['Patient Care', 'Mental Health', 'RN License', 'EMR'],
-      'description':
-          'Provide compassionate psychiatric nursing care at Canada\'s leading mental health teaching hospital.',
-    },
-    {
-      'id': 'search_008',
-      'title': 'UX Writer',
-      'company': 'Intuit',
-      'companyLogo':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_19938e190-1783736380383.png',
-      'companyLogoSemanticLabel':
-          'Intuit financial software company logo with blue branding',
-      'salary': '\$105K',
-      'salaryMin': 105000,
-      'salaryPeriod': 'year',
-      'location': 'Mississauga, ON',
-      'jobType': 'Remote',
-      'isRemote': true,
-      'isNew': true,
-      'applicants': 33,
-      'category': 'Design',
-      'province': 'Ontario',
-      'postedDaysAgo': 0,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://jobs.intuit.com',
-      'skills': ['Content Strategy', 'Figma', 'A/B Testing', 'Plain Language'],
-      'description':
-          'Shape the words that help millions of Canadians file taxes and manage their finances with TurboTax.',
-    },
-  ];
-
-  List<Map<String, dynamic>> get _filteredJobs {
-    List<Map<String, dynamic>> results = List.from(_allJobMaps);
-
-    if (_searchQuery.isNotEmpty) {
-      final q = _searchQuery.toLowerCase();
-      results = results.where((job) {
-        return (job['title'] as String).toLowerCase().contains(q) ||
-            (job['company'] as String).toLowerCase().contains(q) ||
-            (job['category'] as String).toLowerCase().contains(q) ||
-            (job['location'] as String).toLowerCase().contains(q);
-      }).toList();
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialFilters != null) {
+      _activeFilters = Map<String, dynamic>.from(widget.initialFilters!);
     }
+    _fetchJobs(isRefresh: true);
+    _scrollController.addListener(_onScroll);
+  }
 
-    if (_activeFilters['province'] != null &&
-        (_activeFilters['province'] as List).isNotEmpty) {
-      final provinces = _activeFilters['province'] as List<String>;
-      results = results
-          .where((job) => provinces.contains(job['province']))
-          .toList();
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoading && _currentPage < _lastPage) {
+        _currentPage++;
+        _fetchJobs();
+      }
     }
+  }
 
-    if (_activeFilters['jobType'] != null &&
-        (_activeFilters['jobType'] as List).isNotEmpty) {
-      final types = _activeFilters['jobType'] as List<String>;
-      results = results
-          .where(
-            (job) => types.any(
-              (t) => (job['jobType'] as String).toLowerCase().contains(
-                t.toLowerCase(),
-              ),
-            ),
-          )
-          .toList();
-    }
+  Future<void> _fetchJobs({bool isRefresh = false}) async {
+    if (!mounted) return;
+    if (_isLoading && !isRefresh) return;
 
-    if (_activeFilters['remoteOnly'] == true) {
-      results = results.where((job) => job['isRemote'] == true).toList();
+    setState(() {
+      _isLoading = true;
+      if (isRefresh) {
+        _currentPage = 1;
+      }
+    });
+
+    try {
+      final api = ApiService();
+
+      String? category = _activeFilters['category'] as String?;
+      bool? remote = _activeFilters['remoteOnly'] as bool?;
+
+      String? type;
+      if (_activeFilters['jobType'] != null && (_activeFilters['jobType'] as List).isNotEmpty) {
+        type = (_activeFilters['jobType'] as List).first as String;
+      }
+
+      String? province;
+      if (_activeFilters['province'] != null && (_activeFilters['province'] as List).isNotEmpty) {
+        province = (_activeFilters['province'] as List).first as String;
+      }
+
+      bool? today = _activeFilters['todayOnly'] as bool?;
+      int? minSalary = _activeFilters['highSalary'] == true ? 100000 : null;
+
+      final results = await api.getJobs(
+        query: _searchQuery,
+        category: category,
+        remote: remote,
+        type: type,
+        province: province,
+        today: today,
+        minSalary: minSalary,
+        page: _currentPage,
+        perPage: 20,
+      );
+
+      final List<dynamic> jobsList = results['data'] as List? ?? [];
+      final int lastPageVal = results['last_page'] as int? ?? 1;
+
+      if (mounted) {
+        setState(() {
+          final newJobs = List<Map<String, dynamic>>.from(jobsList);
+          if (isRefresh) {
+            _jobs = newJobs;
+          } else {
+            _jobs.addAll(newJobs);
+          }
+          _lastPage = lastPageVal;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching jobs: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      setState(() => _searchQuery = query);
+      _fetchJobs(isRefresh: true);
+    });
+  }
+
+  List<Map<String, dynamic>> get _sortedJobs {
+    List<Map<String, dynamic>> results = List.from(_jobs);
 
     switch (_sortBy) {
       case 'Most Recent':
         results.sort(
           (a, b) =>
-              (a['postedDaysAgo'] as int).compareTo(b['postedDaysAgo'] as int),
+              (a['postedDaysAgo'] as int? ?? 0).compareTo(b['postedDaysAgo'] as int? ?? 0),
         );
         break;
       case 'Highest Salary':
         results.sort(
-          (a, b) => (b['salaryMin'] as int).compareTo(a['salaryMin'] as int),
+          (a, b) => (b['salaryMin'] as int? ?? 0).compareTo(a['salaryMin'] as int? ?? 0),
         );
         break;
       case 'Most Applicants':
         results.sort(
-          (a, b) => (b['applicants'] as int).compareTo(a['applicants'] as int),
+          (a, b) => (b['applicants'] as int? ?? 0).compareTo(a['applicants'] as int? ?? 0),
         );
         break;
     }
@@ -324,6 +170,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
         currentFilters: _activeFilters,
         onApply: (filters) {
           setState(() => _activeFilters = filters);
+          _fetchJobs(isRefresh: true);
         },
       ),
     );
@@ -337,6 +184,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -344,7 +192,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isTablet = MediaQuery.of(context).size.width >= 600;
-    final results = _filteredJobs;
+    final results = _sortedJobs;
     final activeFilterCount = _countActiveFilters();
 
     return Scaffold(
@@ -383,7 +231,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                   const SizedBox(height: 10),
                   SearchFilterBarWidget(
                     controller: _searchController,
-                    onChanged: (v) => setState(() => _searchQuery = v),
+                    onChanged: _onSearchChanged,
                     onFilterTap: _openFilterSheet,
                     activeFilterCount: activeFilterCount,
                   ),
@@ -430,28 +278,37 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                         _QuickChip(
                           label: 'Remote Only',
                           isSelected: _activeFilters['remoteOnly'] == true,
-                          onTap: () => setState(() {
-                            _activeFilters['remoteOnly'] =
-                                !(_activeFilters['remoteOnly'] == true);
-                          }),
+                          onTap: () {
+                            setState(() {
+                              _activeFilters['remoteOnly'] =
+                                  !(_activeFilters['remoteOnly'] == true);
+                            });
+                            _fetchJobs(isRefresh: true);
+                          },
                         ),
                         const SizedBox(width: 8),
                         _QuickChip(
                           label: 'Today',
                           isSelected: _activeFilters['todayOnly'] == true,
-                          onTap: () => setState(() {
-                            _activeFilters['todayOnly'] =
-                                !(_activeFilters['todayOnly'] == true);
-                          }),
+                          onTap: () {
+                            setState(() {
+                              _activeFilters['todayOnly'] =
+                                  !(_activeFilters['todayOnly'] == true);
+                            });
+                            _fetchJobs(isRefresh: true);
+                          },
                         ),
                         const SizedBox(width: 8),
                         _QuickChip(
                           label: '\$100K+',
                           isSelected: _activeFilters['highSalary'] == true,
-                          onTap: () => setState(() {
-                            _activeFilters['highSalary'] =
-                                !(_activeFilters['highSalary'] == true);
-                          }),
+                          onTap: () {
+                            setState(() {
+                              _activeFilters['highSalary'] =
+                                  !(_activeFilters['highSalary'] == true);
+                            });
+                            _fetchJobs(isRefresh: true);
+                          },
                         ),
                       ],
                     ),
@@ -462,53 +319,56 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
             ),
             // Results
             Expanded(
-              child: _isLoading
+              child: _isLoading && _jobs.isEmpty
                   ? ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: 5,
                       itemBuilder: (_, __) => const JobCardSkeletonWidget(),
                     )
                   : results.isEmpty
-                  ? EmptyStateWidget(
-                      icon: Icons.search_off_rounded,
-                      title: 'No jobs found',
-                      subtitle:
-                          'Try adjusting your search or filters to find Canadian jobs matching your skills.',
-                      ctaLabel: 'Clear Filters',
-                      onCta: () => setState(() {
-                        _searchController.clear();
-                        _searchQuery = '';
-                        _activeFilters = {};
-                      }),
-                    )
-                  : isTablet
-                  ? GridView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 1.35,
-                          ),
-                      itemCount: results.length,
-                      itemBuilder: (_, i) => SearchJobCardWidget(
-                        job: results[i],
-                        onTap: () => _onJobTap(results[i]),
-                        animationIndex: i,
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
-                      itemCount: results.length,
-                      itemBuilder: (_, i) => SearchJobCardWidget(
-                        job: results[i],
-                        onTap: () => _onJobTap(results[i]),
-                        animationIndex: i,
-                      ),
-                    ),
+                      ? EmptyStateWidget(
+                          icon: Icons.search_off_rounded,
+                          title: 'No jobs found',
+                          subtitle:
+                              'Try adjusting your search or filters to find Canadian jobs matching your skills.',
+                          ctaLabel: 'Clear Filters',
+                          onCta: () {
+                            setState(() {
+                              _searchController.clear();
+                              _searchQuery = '';
+                              _activeFilters = {};
+                            });
+                            _fetchJobs(isRefresh: true);
+                          },
+                        )
+                      : isTablet
+                          ? GridView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: 1.35,
+                                  ),
+                              itemCount: results.length,
+                              itemBuilder: (_, i) => SearchJobCardWidget(
+                                job: results[i],
+                                onTap: () => _onJobTap(results[i]),
+                                animationIndex: i,
+                              ),
+                            )
+                          : ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(16),
+                              itemCount: results.length,
+                              itemBuilder: (_, i) => SearchJobCardWidget(
+                                job: results[i],
+                                onTap: () => _onJobTap(results[i]),
+                                animationIndex: i,
+                              ),
+                            ),
             ),
           ],
         ),
@@ -523,6 +383,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
     if (_activeFilters['remoteOnly'] == true) count++;
     if (_activeFilters['todayOnly'] == true) count++;
     if (_activeFilters['highSalary'] == true) count++;
+    if (_activeFilters['category'] != null) count++;
     return count;
   }
 }

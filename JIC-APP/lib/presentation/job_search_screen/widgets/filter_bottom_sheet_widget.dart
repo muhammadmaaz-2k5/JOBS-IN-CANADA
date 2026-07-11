@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../services/api_service.dart';
 
 class FilterBottomSheetWidget extends StatefulWidget {
   final Map<String, dynamic> currentFilters;
@@ -20,8 +21,10 @@ class _FilterBottomSheetWidgetState extends State<FilterBottomSheetWidget> {
   late List<String> _selectedProvinces;
   late List<String> _selectedJobTypes;
   late bool _remoteOnly;
+  String? _selectedCategory;
+  List<Map<String, dynamic>> _categories = [];
 
-  static const List<String> _provinces = [
+  List<String> _provinces = [
     'Ontario',
     'British Columbia',
     'Quebec',
@@ -52,6 +55,35 @@ class _FilterBottomSheetWidgetState extends State<FilterBottomSheetWidget> {
       widget.currentFilters['jobType'] as List? ?? [],
     );
     _remoteOnly = widget.currentFilters['remoteOnly'] as bool? ?? false;
+    _selectedCategory = widget.currentFilters['category'] as String?;
+    _loadProvinces();
+    _loadCategories();
+  }
+
+  Future<void> _loadProvinces() async {
+    try {
+      final provinceList = await ApiService().getProvinces();
+      if (provinceList.isNotEmpty && mounted) {
+        setState(() {
+          _provinces = provinceList.map((p) => p['name'] as String).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading provinces in filter sheet: $e');
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final categoryList = await ApiService().getCategories();
+      if (categoryList.isNotEmpty && mounted) {
+        setState(() {
+          _categories = categoryList;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading categories in filter sheet: $e');
+    }
   }
 
   void _toggleProvince(String p) {
@@ -75,6 +107,7 @@ class _FilterBottomSheetWidgetState extends State<FilterBottomSheetWidget> {
       'province': _selectedProvinces,
       'jobType': _selectedJobTypes,
       'remoteOnly': _remoteOnly,
+      'category': _selectedCategory,
     });
     Navigator.pop(context);
   }
@@ -84,6 +117,7 @@ class _FilterBottomSheetWidgetState extends State<FilterBottomSheetWidget> {
       _selectedProvinces.clear();
       _selectedJobTypes.clear();
       _remoteOnly = false;
+      _selectedCategory = null;
     });
   }
 
@@ -254,6 +288,55 @@ class _FilterBottomSheetWidgetState extends State<FilterBottomSheetWidget> {
                       }).toList(),
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  // Category
+                  if (_categories.isNotEmpty)
+                    _FilterSection(
+                      title: 'Category',
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _categories.map((c) {
+                          final label = c['label'] as String? ?? '';
+                          final selected = _selectedCategory == label;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedCategory = selected ? null : label;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 7,
+                              ),
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? theme.colorScheme.primaryContainer
+                                    : theme.colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(8),
+                                border: selected
+                                    ? Border.all(
+                                        color: theme.colorScheme.primary,
+                                        width: 1,
+                                      )
+                                    : null,
+                              ),
+                              child: Text(
+                                label,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: selected
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -273,7 +356,7 @@ class _FilterBottomSheetWidgetState extends State<FilterBottomSheetWidget> {
                     ),
                   ),
                   child: Text(
-                    'Apply Filters (${_selectedProvinces.length + _selectedJobTypes.length + (_remoteOnly ? 1 : 0)})',
+                    'Apply Filters (${_selectedProvinces.length + _selectedJobTypes.length + (_remoteOnly ? 1 : 0) + (_selectedCategory != null ? 1 : 0)})',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,

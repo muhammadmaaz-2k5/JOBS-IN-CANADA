@@ -3,52 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/app_export.dart';
 
 class TopCompaniesWidget extends StatelessWidget {
-  const TopCompaniesWidget({super.key});
+  final List<Map<String, dynamic>> companies;
 
-  static final List<Map<String, dynamic>> _companies = [
-    {
-      'name': 'Spotify',
-      'logoUrl':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_1da815be6-1769423589184.png',
-      'semanticLabel': 'Spotify music streaming company logo',
-      'jobCount': 23,
-    },
-    {
-      'name': 'Apple',
-      'logoUrl':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_19ec829ac-1783736379750.png',
-      'semanticLabel': 'Apple technology company logo',
-      'jobCount': 41,
-    },
-    {
-      'name': 'Slack',
-      'logoUrl':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_18b173690-1768637023216.png',
-      'semanticLabel': 'Slack workplace communication platform logo',
-      'jobCount': 17,
-    },
-    {
-      'name': 'Shopify',
-      'logoUrl':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_1fd7282dc-1772974660577.png',
-      'semanticLabel': 'Shopify e-commerce platform company logo',
-      'jobCount': 58,
-    },
-    {
-      'name': 'Notion',
-      'logoUrl':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_1caac3b51-1772623965291.png',
-      'semanticLabel': 'Notion productivity software company logo',
-      'jobCount': 9,
-    },
-    {
-      'name': 'RBC',
-      'logoUrl':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_1cfdd4e14-1783736379911.png',
-      'semanticLabel': 'Royal Bank of Canada financial institution logo',
-      'jobCount': 134,
-    },
-  ];
+  const TopCompaniesWidget({required this.companies, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +15,13 @@ class TopCompaniesWidget extends StatelessWidget {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _companies.length,
+        itemCount: companies.length,
         itemBuilder: (_, i) {
-          final company = _companies[i];
+          final company = companies[i];
+          final logoUrl = company['logoUrl'] as String? ?? '';
+          final name = company['name'] as String? ?? '';
+          final semanticLabel = company['semanticLabel'] as String? ?? '$name company logo';
+
           return Container(
             width: 80,
             margin: const EdgeInsets.only(right: 12),
@@ -81,18 +42,31 @@ class TopCompaniesWidget extends StatelessWidget {
                     ],
                   ),
                   child: ClipOval(
-                    child: CustomImageWidget(
-                      imageUrl: company['logoUrl'] as String,
-                      width: 56,
-                      height: 56,
-                      fit: BoxFit.cover,
-                      semanticLabel: company['semanticLabel'] as String,
-                    ),
+                    child: logoUrl.isNotEmpty
+                        ? CustomImageWidget(
+                            imageUrl: logoUrl,
+                            width: 56,
+                            height: 56,
+                            fit: BoxFit.cover,
+                            semanticLabel: semanticLabel,
+                          )
+                        : Container(
+                            color: theme.colorScheme.primaryContainer,
+                            alignment: Alignment.center,
+                            child: Text(
+                              name.isNotEmpty ? name.substring(0, 1) : '?',
+                              style: TextStyle(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  company['name'] as String,
+                  name,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -110,3 +84,4 @@ class TopCompaniesWidget extends StatelessWidget {
     );
   }
 }
+

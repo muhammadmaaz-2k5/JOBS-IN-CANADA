@@ -71,7 +71,9 @@ final GoRouter appRouter = GoRouter(
               path: AppRoutes.jobSearchScreen,
               pageBuilder: (context, state) => CustomTransitionPage(
                 key: state.pageKey,
-                child: const JobSearchScreen(),
+                child: JobSearchScreen(
+                  initialFilters: state.extra as Map<String, dynamic>?,
+                ),
                 transitionDuration: const Duration(milliseconds: 280),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {

@@ -4,91 +4,28 @@ import 'package:flutter/services.dart';
 import '../../../core/app_export.dart';
 
 class RecommendedSectionWidget extends StatelessWidget {
+  final List<Map<String, dynamic>> jobs;
   final Function(Map<String, dynamic>) onJobTap;
 
-  const RecommendedSectionWidget({required this.onJobTap, super.key});
-
-  static final List<Map<String, dynamic>> _recommendedMaps = [
-    {
-      'id': 'rec_001',
-      'title': 'UI Designer',
-      'company': 'Figma',
-      'companyLogo':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_14898759e-1772037482288.png',
-      'companyLogoSemanticLabel': 'Figma design tool company logo',
-      'salary': '\$110K',
-      'salaryPeriod': 'yr',
-      'location': 'Remote',
-      'jobType': 'Full-Time',
-      'isRemote': true,
-      'isNew': false,
-      'applicants': 29,
-      'category': 'Design',
-      'province': 'Remote',
-      'postedDaysAgo': 1,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://www.figma.com/careers',
-    },
-    {
-      'id': 'rec_002',
-      'title': 'UX Researcher',
-      'company': 'Microsoft',
-      'companyLogo':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_174ad6426-1783736379527.png',
-      'companyLogoSemanticLabel': 'Microsoft technology company logo',
-      'salary': '\$115K',
-      'salaryPeriod': 'yr',
-      'location': 'Vancouver, BC',
-      'jobType': 'Full-Time',
-      'isRemote': false,
-      'isNew': true,
-      'applicants': 14,
-      'category': 'Design',
-      'province': 'British Columbia',
-      'postedDaysAgo': 0,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://careers.microsoft.com',
-    },
-    {
-      'id': 'rec_003',
-      'title': 'Product Designer',
-      'company': 'Airbnb',
-      'companyLogo':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_19ed1076f-1783736379938.png',
-      'companyLogoSemanticLabel': 'Airbnb travel platform company logo',
-      'salary': '\$105K',
-      'salaryPeriod': 'yr',
-      'location': 'Toronto, ON',
-      'jobType': 'Contract',
-      'isRemote': false,
-      'isNew': false,
-      'applicants': 36,
-      'category': 'Design',
-      'province': 'Ontario',
-      'postedDaysAgo': 2,
-      'isFeatured': false,
-      'isSaved': false,
-      'applicantAvatars': [],
-      'applyUrl': 'https://careers.airbnb.com',
-    },
-  ];
+  const RecommendedSectionWidget({
+    required this.jobs,
+    required this.onJobTap,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (jobs.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: _recommendedMaps.asMap().entries.map((entry) {
+        children: jobs.asMap().entries.map((entry) {
           final job = entry.value;
           return Expanded(
             child: Padding(
               padding: EdgeInsets.only(
-                right: entry.key < _recommendedMaps.length - 1 ? 8 : 0,
+                right: entry.key < jobs.length - 1 ? 8 : 0,
               ),
               child: _RecommendedCard(job: job, onTap: () => onJobTap(job)),
             ),
@@ -98,6 +35,7 @@ class RecommendedSectionWidget extends StatelessWidget {
     );
   }
 }
+
 
 class _RecommendedCard extends StatelessWidget {
   final Map<String, dynamic> job;

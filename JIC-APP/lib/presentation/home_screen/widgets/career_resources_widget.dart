@@ -1,39 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/app_export.dart';
 
 class CareerResourcesWidget extends StatelessWidget {
-  const CareerResourcesWidget({super.key});
+  final List<Map<String, dynamic>> resources;
 
-  static const List<Map<String, dynamic>> _resources = [
-    {
-      'icon': Icons.description_outlined,
-      'title': 'Resume Review',
-      'subtitle': 'Get expert feedback on your Canadian resume',
-      'color': Color(0xFFDBEAFE),
-      'iconColor': Color(0xFF2563EB),
-    },
-    {
-      'icon': Icons.chat_bubble_outline_rounded,
-      'title': 'Interview Tips',
-      'subtitle': 'Ace your next Canadian job interview',
-      'color': Color(0xFFDCFCE7),
-      'iconColor': Color(0xFF16A34A),
-    },
-    {
-      'icon': Icons.insights_rounded,
-      'title': 'Salary Insights',
-      'subtitle': 'Know your worth in the Canadian market',
-      'color': Color(0xFFFEF3C7),
-      'iconColor': Color(0xFFD97706),
-    },
-    {
-      'icon': Icons.school_outlined,
-      'title': 'Work Permit Guide',
-      'subtitle': 'Understand LMIA & work authorization in Canada',
-      'color': Color(0xFFF3E8FF),
-      'iconColor': Color(0xFFA855F7),
-    },
-  ];
+  const CareerResourcesWidget({required this.resources, super.key});
+
+  Color _parseHexColor(String? hexString, Color fallback) {
+    if (hexString == null || hexString.isEmpty) return fallback;
+    try {
+      final hex = hexString.replaceAll('#', '');
+      if (hex.length == 6) {
+        return Color(int.parse('FF$hex', radix: 16));
+      } else if (hex.length == 8) {
+        return Color(int.parse(hex, radix: 16));
+      }
+    } catch (_) {}
+    return fallback;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +38,12 @@ class CareerResourcesWidget extends StatelessWidget {
           ],
         ),
         child: Column(
-          children: _resources.asMap().entries.map((entry) {
+          children: resources.asMap().entries.map((entry) {
             final i = entry.key;
             final resource = entry.value;
+            final color = _parseHexColor(resource['color'] as String?, Colors.grey.shade100);
+            final iconColor = _parseHexColor(resource['iconColor'] as String?, theme.colorScheme.primary);
+
             return Column(
               children: [
                 Padding(
@@ -69,13 +57,21 @@ class CareerResourcesWidget extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: resource['color'] as Color,
+                          color: color,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
-                          resource['icon'] as IconData,
-                          color: resource['iconColor'] as Color,
-                          size: 20,
+                        child: Center(
+                          child: resource['icon'] is IconData
+                              ? Icon(
+                                  resource['icon'] as IconData,
+                                  color: iconColor,
+                                  size: 20,
+                                )
+                              : CustomIconWidget(
+                                  iconName: (resource['icon'] as String? ?? 'help_outline'),
+                                  color: iconColor,
+                                  size: 20,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -84,7 +80,7 @@ class CareerResourcesWidget extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              resource['title'] as String,
+                              resource['title'] as String? ?? '',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -92,7 +88,7 @@ class CareerResourcesWidget extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              resource['subtitle'] as String,
+                              resource['subtitle'] as String? ?? '',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurfaceVariant,
@@ -109,7 +105,7 @@ class CareerResourcesWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (i < _resources.length - 1)
+                if (i < resources.length - 1)
                   Divider(
                     height: 1,
                     color: theme.colorScheme.outlineVariant,
@@ -124,3 +120,4 @@ class CareerResourcesWidget extends StatelessWidget {
     );
   }
 }
+

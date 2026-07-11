@@ -63,19 +63,20 @@ class JobInfoMetricWidget extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    metric['value'] as String,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSurface,
-                      fontFeatures: metric['label'] == 'Salary'
-                          ? const [FontFeature.tabularFigures()]
-                          : null,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      metric['value'] as String,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                        fontFeatures: metric['label'] == 'Salary'
+                            ? const [FontFeature.tabularFigures()]
+                            : null,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

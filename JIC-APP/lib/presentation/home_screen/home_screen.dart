@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
 import './widgets/career_resources_widget.dart';
 import './widgets/category_grid_widget.dart';
 import './widgets/featured_job_card_widget.dart';
@@ -27,82 +28,68 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   String _selectedCategory = 'All';
 
-  final List<String> _filterCategories = [
-    'All',
-    'Design',
-    'Engineering',
-    'Marketing',
-    'Product',
-    'Data',
-    'Finance',
-    'Healthcare',
-  ];
-
-  final List<Map<String, dynamic>> _featuredJobMaps = [
-    {
-      'id': 'job_001',
-      'title': 'Senior Product Designer',
-      'company': 'Shopify',
-      'companyLogo':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_17f3d00d9-1783736379242.png',
-      'companyLogoSemanticLabel': 'Shopify company logo mark',
-      'salary': '\$115K',
-      'salaryPeriod': 'year',
-      'location': 'Ottawa, ON',
-      'jobType': 'Full-Time',
-      'isRemote': false,
-      'isNew': true,
-      'applicants': 47,
-      'category': 'Design',
-      'province': 'Ontario',
-      'postedDaysAgo': 0,
-      'isFeatured': true,
-      'isSaved': false,
-      'applicantAvatars': [
-        'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?w=40&h=40&fit=crop',
-        'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?w=40&h=40&fit=crop',
-        'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=40&h=40&fit=crop',
-      ],
-      'applyUrl': 'https://www.shopify.com/careers',
-    },
-    {
-      'id': 'job_002',
-      'title': 'Staff Software Engineer',
-      'company': 'Wealthsimple',
-      'companyLogo':
-          'https://img.rocket.new/generatedImages/rocket_gen_img_1ed3b6573-1783736379632.png',
-      'companyLogoSemanticLabel': 'Wealthsimple company logo mark',
-      'salary': '\$175K',
-      'salaryPeriod': 'year',
-      'location': 'Toronto, ON',
-      'jobType': 'Full-Time',
-      'isRemote': true,
-      'isNew': true,
-      'applicants': 83,
-      'category': 'Engineering',
-      'province': 'Ontario',
-      'postedDaysAgo': 0,
-      'isFeatured': true,
-      'isSaved': false,
-      'applicantAvatars': [
-        'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=40&h=40&fit=crop',
-        'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?w=40&h=40&fit=crop',
-        'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?w=40&h=40&fit=crop',
-      ],
-      'applyUrl': 'https://jobs.lever.co/wealthsimple',
-    },
-  ];
+  List<String> _filterCategories = ['All'];
+  List<Map<String, dynamic>> _categories = [];
+  List<Map<String, dynamic>> _companies = [];
+  List<Map<String, dynamic>> _featuredJobs = [];
+  List<Map<String, dynamic>> _recommendedJobs = [];
+  List<Map<String, dynamic>> _careerResources = [];
+  int _jobsTodayCount = 0;
+  int _jobsThisWeekCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _simulateLoad();
+    _loadData();
   }
 
-  Future<void> _simulateLoad() async {
+  Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) setState(() => _isLoading = false);
+
+    try {
+      final api = ApiService();
+
+      // Load all data concurrently
+      final results = await Future.wait([
+        api.getCategories(),
+        api.getCompanies(),
+        api.getJobs(featured: true, perPage: 10),
+        api.getJobs(perPage: 3), // Recommended (first 3 jobs)
+        api.getCareerResources(),
+        api.getSettings(),
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _categories = List<Map<String, dynamic>>.from(results[0] as List);
+          if (_categories.isNotEmpty) {
+            _filterCategories = ['All', ..._categories.map((c) => c['label'] as String? ?? '')];
+          }
+
+          _companies = List<Map<String, dynamic>>.from(results[1] as List);
+
+          final featuredData = results[2] as Map<String, dynamic>;
+          _featuredJobs = List<Map<String, dynamic>>.from(featuredData['data'] as List? ?? []);
+
+          final recommendedData = results[3] as Map<String, dynamic>;
+          _recommendedJobs = List<Map<String, dynamic>>.from(recommendedData['data'] as List? ?? []);
+
+          _careerResources = List<Map<String, dynamic>>.from(results[4] as List);
+
+          final settingsData = results[5] as Map<String, dynamic>;
+          _jobsTodayCount = settingsData['jobsToday'] as int? ?? 0;
+          _jobsThisWeekCount = settingsData['jobsThisWeek'] as int? ?? 0;
+
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading home data: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -125,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           color: theme.colorScheme.primary,
-          onRefresh: _simulateLoad,
+          onRefresh: _loadData,
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -184,8 +171,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: FilterChip(
                             label: Text(cat),
                             selected: isSelected,
-                            onSelected: (_) =>
-                                setState(() => _selectedCategory = cat),
+                            onSelected: (_) {
+                              setState(() => _selectedCategory = cat);
+                              // Optional: Route to search screen with selected category
+                              context.go(
+                                AppRoutes.jobSearchScreen,
+                                extra: cat != 'All' ? {'category': cat} : null,
+                              );
+                            },
                             backgroundColor: theme.colorScheme.surface,
                             selectedColor: theme.colorScheme.primaryContainer,
                             labelStyle: GoogleFonts.plusJakartaSans(
@@ -211,7 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SliverToBoxAdapter(
-                child: TodayJobsBannerWidget(todayCount: 124, weekCount: 847),
+                child: TodayJobsBannerWidget(
+                  todayCount: _jobsTodayCount,
+                  weekCount: _jobsThisWeekCount,
+                ),
               ),
               // Featured Jobs Section
               SliverToBoxAdapter(
@@ -239,11 +235,9 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: _isLoading
                     ? const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          children: [
-                            // TODO: Replace with Riverpod/Bloc loading state
-                          ],
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        child: Center(
+                          child: CircularProgressIndicator(),
                         ),
                       )
                     : Padding(
@@ -259,14 +253,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       mainAxisSpacing: 12,
                                       childAspectRatio: 1.1,
                                     ),
-                                itemCount: _featuredJobMaps.length,
+                                itemCount: _featuredJobs.length,
                                 itemBuilder: (_, i) => FeaturedJobCardWidget(
-                                  job: _featuredJobMaps[i],
-                                  onTap: () => _onJobTap(_featuredJobMaps[i]),
+                                  job: _featuredJobs[i],
+                                  onTap: () => _onJobTap(_featuredJobs[i]),
                                 ),
                               )
                             : Column(
-                                children: _featuredJobMaps
+                                children: _featuredJobs
                                     .map(
                                       (job) => Padding(
                                         padding: const EdgeInsets.only(
@@ -309,7 +303,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SliverToBoxAdapter(
-                child: RecommendedSectionWidget(onJobTap: _onJobTap),
+                child: _isLoading
+                    ? const SizedBox.shrink()
+                    : RecommendedSectionWidget(
+                        jobs: _recommendedJobs,
+                        onJobTap: _onJobTap,
+                      ),
               ),
               // Top Companies
               SliverToBoxAdapter(
@@ -334,7 +333,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: TopCompaniesWidget()),
+              SliverToBoxAdapter(
+                child: _isLoading
+                    ? const SizedBox.shrink()
+                    : TopCompaniesWidget(companies: _companies),
+              ),
               // Job Categories
               SliverToBoxAdapter(
                 child: Padding(
@@ -359,12 +362,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SliverToBoxAdapter(
-                child: CategoryGridWidget(
-                  onCategoryTap: (cat) {
-                    setState(() => _selectedCategory = cat);
-                    context.go(AppRoutes.jobSearchScreen);
-                  },
-                ),
+                child: _isLoading
+                    ? const SizedBox.shrink()
+                    : CategoryGridWidget(
+                        categories: _categories,
+                        onCategoryTap: (cat) {
+                          setState(() => _selectedCategory = cat);
+                          context.go(
+                            AppRoutes.jobSearchScreen,
+                            extra: {'category': cat},
+                          );
+                        },
+                      ),
               ),
               // Career Resources
               SliverToBoxAdapter(
@@ -389,7 +398,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: CareerResourcesWidget()),
+              SliverToBoxAdapter(
+                child: _isLoading
+                    ? const SizedBox.shrink()
+                    : CareerResourcesWidget(resources: _careerResources),
+              ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           ),
@@ -398,6 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
 
 class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onTap;
