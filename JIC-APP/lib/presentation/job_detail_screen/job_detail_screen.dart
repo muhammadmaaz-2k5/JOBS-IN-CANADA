@@ -130,9 +130,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         ],
       ),
       body: SafeArea(
-        child: isTablet
-            ? _buildTabletLayout(context, job)
-            : _buildPhoneLayout(context, job),
+        child: _buildUnifiedLayout(context, job, isTablet),
       ),
       bottomNavigationBar: StickyApplyBarWidget(
         isSaved: _isSaved,
@@ -146,80 +144,51 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     );
   }
 
-  Widget _buildPhoneLayout(BuildContext context, Map<String, dynamic> job) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          JobDetailHeaderWidget(job: job),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: JobInfoMetricWidget(job: job),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-            child: QualificationsWidget(job: job),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-            child: JobOverviewWidget(job: job),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-            child: SkillChipsWidget(job: job),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-            child: AboutCompanyWidget(job: job),
-          ),
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
-  }
+  Widget _buildUnifiedLayout(
+    BuildContext context,
+    Map<String, dynamic> job,
+    bool isTablet,
+  ) {
+    final double paddingVal = isTablet ? 32 : 16;
+    final double elementSpacing = isTablet ? 24 : 20;
 
-  Widget _buildTabletLayout(BuildContext context, Map<String, dynamic> job) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Left panel — header + metrics
-        SizedBox(
-          width: MediaQuery.of(context).size.width * 0.4,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                JobDetailHeaderWidget(job: job),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: JobInfoMetricWidget(job: job),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: AboutCompanyWidget(job: job),
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
+    return SingleChildScrollView(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              JobDetailHeaderWidget(job: job),
+              Padding(
+                padding: EdgeInsets.fromLTRB(paddingVal, 20, paddingVal, 0),
+                child: JobInfoMetricWidget(job: job),
+              ),
+              Padding(
+                padding:
+                    EdgeInsets.fromLTRB(paddingVal, elementSpacing, paddingVal, 0),
+                child: JobOverviewWidget(job: job),
+              ),
+              Padding(
+                padding:
+                    EdgeInsets.fromLTRB(paddingVal, elementSpacing, paddingVal, 0),
+                child: QualificationsWidget(job: job),
+              ),
+              Padding(
+                padding:
+                    EdgeInsets.fromLTRB(paddingVal, elementSpacing, paddingVal, 0),
+                child: SkillChipsWidget(job: job),
+              ),
+              Padding(
+                padding:
+                    EdgeInsets.fromLTRB(paddingVal, elementSpacing, paddingVal, 0),
+                child: AboutCompanyWidget(job: job),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
         ),
-        // Right panel — detail content
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                QualificationsWidget(job: job),
-                const SizedBox(height: 20),
-                JobOverviewWidget(job: job),
-                const SizedBox(height: 20),
-                SkillChipsWidget(job: job),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
