@@ -336,7 +336,15 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: _isLoading
                     ? const SizedBox.shrink()
-                    : TopCompaniesWidget(companies: _companies),
+                    : TopCompaniesWidget(
+                        companies: _companies,
+                        onCompanyTap: (companyName) {
+                          context.go(
+                            AppRoutes.jobSearchScreen,
+                            extra: {'query': companyName},
+                          );
+                        },
+                      ),
               ),
               // Job Categories
               SliverToBoxAdapter(

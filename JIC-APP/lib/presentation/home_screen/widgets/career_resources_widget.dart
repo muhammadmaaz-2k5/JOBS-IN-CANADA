@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_export.dart';
 
 class CareerResourcesWidget extends StatelessWidget {
@@ -46,63 +47,75 @@ class CareerResourcesWidget extends StatelessWidget {
 
             return Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(10),
+                GestureDetector(
+                  onTap: () {
+                    final urlString = resource['url'] as String? ?? '';
+                    if (urlString.isNotEmpty) {
+                      final Uri url = Uri.parse(urlString);
+                      launchUrl(url, mode: LaunchMode.externalApplication).catchError((e) {
+                        debugPrint('Could not launch $urlString: $e');
+                        return false;
+                      });
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: resource['icon'] is IconData
+                                ? Icon(
+                                    resource['icon'] as IconData,
+                                    color: iconColor,
+                                    size: 20,
+                                  )
+                                : CustomIconWidget(
+                                    iconName: (resource['icon'] as String? ?? 'help_outline'),
+                                    color: iconColor,
+                                    size: 20,
+                                  ),
+                          ),
                         ),
-                        child: Center(
-                          child: resource['icon'] is IconData
-                              ? Icon(
-                                  resource['icon'] as IconData,
-                                  color: iconColor,
-                                  size: 20,
-                                )
-                              : CustomIconWidget(
-                                  iconName: (resource['icon'] as String? ?? 'help_outline'),
-                                  color: iconColor,
-                                  size: 20,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                resource['title'] as String? ?? '',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
                                 ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              resource['title'] as String? ?? '',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface,
                               ),
-                            ),
-                            Text(
-                              resource['subtitle'] as String? ?? '',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurfaceVariant,
+                              Text(
+                                resource['subtitle'] as String? ?? '',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 14,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ],
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 if (i < resources.length - 1)

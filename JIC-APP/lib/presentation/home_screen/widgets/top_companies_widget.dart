@@ -4,8 +4,13 @@ import '../../../core/app_export.dart';
 
 class TopCompaniesWidget extends StatelessWidget {
   final List<Map<String, dynamic>> companies;
+  final Function(String) onCompanyTap;
 
-  const TopCompaniesWidget({required this.companies, super.key});
+  const TopCompaniesWidget({
+    required this.companies,
+    required this.onCompanyTap,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +27,11 @@ class TopCompaniesWidget extends StatelessWidget {
           final name = company['name'] as String? ?? '';
           final semanticLabel = company['semanticLabel'] as String? ?? '$name company logo';
 
-          return Container(
-            width: 80,
-            margin: const EdgeInsets.only(right: 12),
+          return GestureDetector(
+            onTap: () => onCompanyTap(name),
+            child: Container(
+              width: 80,
+              margin: const EdgeInsets.only(right: 12),
             child: Column(
               children: [
                 Container(
@@ -78,8 +85,9 @@ class TopCompaniesWidget extends StatelessWidget {
                 ),
               ],
             ),
-          );
-        },
+          ),
+        );
+      },
       ),
     );
   }

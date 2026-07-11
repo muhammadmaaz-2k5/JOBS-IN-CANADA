@@ -350,7 +350,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 12,
                                     mainAxisSpacing: 12,
-                                    childAspectRatio: 1.35,
+                                    childAspectRatio: 1.15,
                                   ),
                               itemCount: results.length,
                               itemBuilder: (_, i) => SearchJobCardWidget(
