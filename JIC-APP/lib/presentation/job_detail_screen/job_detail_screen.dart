@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/app_theme.dart';
+import '../../services/bookmark_service.dart';
 import './widgets/about_company_widget.dart';
 import './widgets/job_detail_header_widget.dart';
 import './widgets/job_info_metric_widget.dart';
@@ -31,6 +32,16 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   void initState() {
     super.initState();
     _isSaved = widget.job['isSaved'] as bool? ?? false;
+    _checkSavedStatus();
+  }
+
+  Future<void> _checkSavedStatus() async {
+    final status = await BookmarkService.isSaved(widget.job['id'] as int);
+    if (mounted) {
+      setState(() {
+        _isSaved = status;
+      });
+    }
   }
 
   Future<void> _onApply() async {
@@ -135,9 +146,15 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       bottomNavigationBar: StickyApplyBarWidget(
         isSaved: _isSaved,
         isApplying: _isApplying,
-        onSave: () {
+        onSave: () async {
           HapticFeedback.lightImpact();
-          setState(() => _isSaved = !_isSaved);
+          await BookmarkService.toggleSave(widget.job);
+          final savedStatus = await BookmarkService.isSaved(widget.job['id'] as int);
+          if (mounted) {
+            setState(() {
+              _isSaved = savedStatus;
+            });
+          }
         },
         onApply: _onApply,
       ),

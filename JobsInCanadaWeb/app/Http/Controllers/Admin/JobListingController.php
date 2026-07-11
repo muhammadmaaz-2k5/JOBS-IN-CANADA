@@ -15,23 +15,28 @@ class JobListingController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = JobListing::with(['company', 'category']);
+        $featuredQuery = JobListing::with(['company', 'category'])->where('is_featured', true);
+        $regularQuery = JobListing::with(['company', 'category'])->where('is_featured', false);
 
         if ($request->filled('q')) {
-            $query->where(function ($q) use ($request) {
+            $search = function ($q) use ($request) {
                 $q->where('title', 'like', '%'.$request->q.'%')
                   ->orWhereHas('company', fn ($c) => $c->where('name', 'like', '%'.$request->q.'%'));
-            });
+            };
+            $featuredQuery->where($search);
+            $regularQuery->where($search);
         }
 
         if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
+            $featuredQuery->where('category_id', $request->category);
+            $regularQuery->where('category_id', $request->category);
         }
 
-        $jobs = $query->latest()->paginate(15)->withQueryString();
+        $featuredJobs = $featuredQuery->latest()->get();
+        $jobs = $regularQuery->latest()->paginate(15)->withQueryString();
         $categories = Category::orderBy('name')->get();
 
-        return view('admin.jobs.index', compact('jobs', 'categories'));
+        return view('admin.jobs.index', compact('featuredJobs', 'jobs', 'categories'));
     }
 
     public function create(): View
@@ -132,6 +137,15 @@ class JobListingController extends Controller
 
         $data['skills'] = $this->prepareSkills($request->input('skills'));
         $data['applicant_avatars'] = $this->prepareAvatars($request->input('applicant_avatars'));
+
+        $data['is_remote'] = $request->boolean('is_remote');
+        $data['is_new'] = $request->boolean('is_new');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_active'] = $request->boolean('is_active');
+
+        if (empty($data['posted_at'])) {
+            $data['posted_at'] = now();
+        }
 
         return $data;
     }

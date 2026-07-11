@@ -9,11 +9,13 @@ class SearchJobCardWidget extends StatefulWidget {
   final Map<String, dynamic> job;
   final VoidCallback onTap;
   final int animationIndex;
+  final VoidCallback? onBookmarkToggle;
 
   const SearchJobCardWidget({
     required this.job,
     required this.onTap,
     required this.animationIndex,
+    this.onBookmarkToggle,
     super.key,
   });
 
@@ -122,12 +124,12 @@ class _SearchJobCardWidgetState extends State<SearchJobCardWidget>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: CustomImageWidget(
-                          imageUrl: job['companyLogo'] as String,
+                          imageUrl: job['companyLogo'] as String? ?? '',
                           width: 34,
                           height: 34,
                           fit: BoxFit.cover,
                           semanticLabel:
-                              job['companyLogoSemanticLabel'] as String,
+                              job['companyLogoSemanticLabel'] as String? ?? 'Company logo',
                         ),
                       ),
                     ),
@@ -168,15 +170,16 @@ class _SearchJobCardWidgetState extends State<SearchJobCardWidget>
                       ),
                     ),
                      GestureDetector(
-                       onTap: () async {
-                         await BookmarkService.toggleSave(widget.job);
-                         final savedStatus = await BookmarkService.isSaved(widget.job['id'] as int);
-                         if (mounted) {
-                           setState(() {
-                             _isSaved = savedStatus;
-                           });
-                         }
-                       },
+                        onTap: () async {
+                          await BookmarkService.toggleSave(widget.job);
+                          final savedStatus = await BookmarkService.isSaved(widget.job['id'] as int);
+                          if (mounted) {
+                            setState(() {
+                              _isSaved = savedStatus;
+                            });
+                          }
+                          widget.onBookmarkToggle?.call();
+                        },
                        child: Icon(
                          _isSaved
                              ? Icons.bookmark_rounded

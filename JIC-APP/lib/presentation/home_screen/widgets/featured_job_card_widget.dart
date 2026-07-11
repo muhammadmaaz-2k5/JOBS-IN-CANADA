@@ -129,12 +129,12 @@ class _FeaturedJobCardWidgetState extends State<FeaturedJobCardWidget>
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: CustomImageWidget(
-                        imageUrl: job['companyLogo'] as String,
+                        imageUrl: job['companyLogo'] as String? ?? '',
                         width: 32,
                         height: 32,
                         fit: BoxFit.cover,
                         semanticLabel:
-                            job['companyLogoSemanticLabel'] as String,
+                            job['companyLogoSemanticLabel'] as String? ?? 'Company logo',
                       ),
                     ),
                   ),

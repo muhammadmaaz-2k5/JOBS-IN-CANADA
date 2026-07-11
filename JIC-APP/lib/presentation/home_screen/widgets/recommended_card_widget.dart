@@ -77,11 +77,11 @@ class _RecommendedCard extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: CustomImageWidget(
-                  imageUrl: job['companyLogo'] as String,
+                  imageUrl: job['companyLogo'] as String? ?? '',
                   width: 36,
                   height: 36,
                   fit: BoxFit.cover,
-                  semanticLabel: job['companyLogoSemanticLabel'] as String,
+                  semanticLabel: job['companyLogoSemanticLabel'] as String? ?? 'Company logo',
                 ),
               ),
             ),

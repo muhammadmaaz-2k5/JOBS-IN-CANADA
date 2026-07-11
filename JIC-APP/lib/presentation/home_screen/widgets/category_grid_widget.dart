@@ -22,6 +22,9 @@ class CategoryGridWidget extends StatelessWidget {
         return Color(int.parse(hex, radix: 16));
       }
     } catch (_) {}
+    return fallback;
+  }
+
   Color _contrastColorFor(String? hexString, Color fallback) {
     if (hexString == null || hexString.isEmpty) return fallback;
     final cleanHex = hexString.replaceAll('#', '').toLowerCase();

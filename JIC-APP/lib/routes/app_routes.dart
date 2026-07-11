@@ -5,6 +5,7 @@ import '../presentation/home_screen/home_screen.dart';
 import '../presentation/job_detail_screen/job_detail_screen.dart';
 import '../presentation/job_search_screen/job_search_screen.dart';
 import '../presentation/saved_screen/saved_screen.dart';
+import '../presentation/splash_screen/splash_screen.dart';
 import '../widgets/app_scaffold.dart';
 
 class AppRoutes {
@@ -22,7 +23,7 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.initial,
       pageBuilder: (context, state) => CustomTransitionPage(
         key: state.pageKey,
-        child: const HomeScreen(),
+        child: const SplashScreen(),
         transitionDuration: const Duration(milliseconds: 280),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(

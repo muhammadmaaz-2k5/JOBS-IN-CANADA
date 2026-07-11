@@ -100,7 +100,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onJobTap(Map<String, dynamic> job) {
-    context.push(AppRoutes.jobDetailScreen, extra: job);
+    context.push(AppRoutes.jobDetailScreen, extra: job).then((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -198,12 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             selected: isSelected,
                             onSelected: (_) {
-                              setState(() => _selectedCategory = cat);
-                              // Optional: Route to search screen with selected category
-                              context.go(
-                                AppRoutes.jobSearchScreen,
-                                extra: cat != 'All' ? {'category': cat} : null,
-                              );
+                              _filterJobsByCategory(cat);
                             },
                             backgroundColor: theme.colorScheme.surface,
                             selectedColor: theme.colorScheme.primaryContainer,
@@ -407,11 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : CategoryGridWidget(
                         categories: _categories,
                         onCategoryTap: (cat) {
-                          setState(() => _selectedCategory = cat);
-                          context.go(
-                            AppRoutes.jobSearchScreen,
-                            extra: {'category': cat},
-                          );
+                          _filterJobsByCategory(cat);
                         },
                       ),
               ),
@@ -452,6 +447,42 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _filterJobsByCategory(String category) async {
+    if (!mounted) return;
+    setState(() {
+      _selectedCategory = category;
+      _isLoading = true;
+    });
+
+    try {
+      final api = ApiService();
+      final categoryFilter = category == 'All' ? null : category;
+      final results = await Future.wait([
+        api.getJobs(featured: true, category: categoryFilter, perPage: 10),
+        api.getJobs(category: categoryFilter, perPage: 3),
+      ]);
+
+      if (mounted) {
+        setState(() {
+          final featuredData = results[0] as Map<String, dynamic>;
+          _featuredJobs = List<Map<String, dynamic>>.from(featuredData['data'] as List? ?? []);
+
+          final recommendedData = results[1] as Map<String, dynamic>;
+          _recommendedJobs = List<Map<String, dynamic>>.from(recommendedData['data'] as List? ?? []);
+
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error filtering jobs by category: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   Color _getContrastColor(String? hexString, ThemeData theme, bool isSelected) {
     if (isSelected) return theme.colorScheme.primary;
     if (hexString == null || hexString.isEmpty) return theme.colorScheme.onSurfaceVariant;

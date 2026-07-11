@@ -177,7 +177,11 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
   }
 
   void _onJobTap(Map<String, dynamic> job) {
-    context.push(AppRoutes.jobDetailScreen, extra: job);
+    context.push(AppRoutes.jobDetailScreen, extra: job).then((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

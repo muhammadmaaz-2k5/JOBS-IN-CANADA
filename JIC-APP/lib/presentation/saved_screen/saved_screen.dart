@@ -8,11 +8,21 @@ import '../../services/bookmark_service.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../job_search_screen/widgets/search_job_card_widget.dart';
 
-class SavedScreen extends StatelessWidget {
+class SavedScreen extends StatefulWidget {
   const SavedScreen({super.key});
 
+  @override
+  State<SavedScreen> createState() => _SavedScreenState();
+}
+
+class _SavedScreenState extends State<SavedScreen> {
   void _onJobTap(BuildContext context, Map<String, dynamic> job) {
-    context.push(AppRoutes.jobDetailScreen, extra: job);
+    context.push(AppRoutes.jobDetailScreen, extra: job).then((_) {
+      // Refresh list when returning from detail screen (in case they unsaved there)
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -83,6 +93,11 @@ class SavedScreen extends StatelessWidget {
                       job: job,
                       onTap: () => _onJobTap(context, job),
                       animationIndex: index,
+                      onBookmarkToggle: () {
+                        if (mounted) {
+                          setState(() {});
+                        }
+                      },
                     );
                   },
                 ),
