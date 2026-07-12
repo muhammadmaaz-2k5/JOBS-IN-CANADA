@@ -40,7 +40,7 @@
             </div>
 
             <div class="field">
-                <label for="enable_webview_ads">Webview Ads (Simulate Touch)</label>
+                <label for="enable_webview_ads">Webview Ads</label>
                 <select id="enable_webview_ads" name="enable_webview_ads">
                     <option value="true" {{ old('enable_webview_ads', $enableWebviewAds) == 'true' ? 'selected' : '' }}>Enabled</option>
                     <option value="false" {{ old('enable_webview_ads', $enableWebviewAds) == 'false' ? 'selected' : '' }}>Disabled</option>
@@ -52,15 +52,6 @@
                 <label for="webview_ad_url">Webview Ad Destination URL</label>
                 <input type="url" id="webview_ad_url" name="webview_ad_url" value="{{ old('webview_ad_url', $webviewAdUrl) }}" placeholder="https://nazaarabox.com" required>
                 @error('webview_ad_url')<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
-            </div>
-
-            <div class="field">
-                <label for="app_mode">App Mode</label>
-                <select id="app_mode" name="app_mode">
-                    <option value="live" {{ old('app_mode', $appMode) == 'live' ? 'selected' : '' }}>Live (Shows Ads)</option>
-                    <option value="safe_review" {{ old('app_mode', $appMode) == 'safe_review' ? 'selected' : '' }}>Safe Review (Hides Ads)</option>
-                </select>
-                @error('app_mode')<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
             </div>
         </div>
 

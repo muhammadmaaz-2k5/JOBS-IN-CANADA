@@ -18,7 +18,6 @@ class SettingsController extends Controller
             'adsEnabled' => SiteSetting::get('ads_enabled', 'false'),
             'enableWebviewAds' => SiteSetting::get('enable_webview_ads', 'false'),
             'webviewAdUrl' => SiteSetting::get('webview_ad_url', 'https://nazaarabox.com'),
-            'appMode' => SiteSetting::get('app_mode', 'live'),
         ]);
     }
 
@@ -30,7 +29,6 @@ class SettingsController extends Controller
             'ads_enabled' => ['required', 'in:true,false'],
             'enable_webview_ads' => ['required', 'in:true,false'],
             'webview_ad_url' => ['required', 'url'],
-            'app_mode' => ['required', 'in:live,safe_review'],
         ]);
 
         SiteSetting::set('jobs_today', $data['jobs_today']);
@@ -38,7 +36,6 @@ class SettingsController extends Controller
         SiteSetting::set('ads_enabled', $data['ads_enabled']);
         SiteSetting::set('enable_webview_ads', $data['enable_webview_ads']);
         SiteSetting::set('webview_ad_url', $data['webview_ad_url']);
-        SiteSetting::set('app_mode', $data['app_mode']);
 
         return redirect()->route('admin.settings.index')
             ->with('success', 'Settings updated successfully.');

@@ -74,7 +74,7 @@ fun InlineBannerAd(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(110.dp)
+            .wrapContentHeight()
             .background(SurfaceVariantDarkColor, RoundedCornerShape(12.dp)),
         contentAlignment = Alignment.Center,
     ) {
@@ -122,9 +122,6 @@ fun CustomSmallCardAd(
                 url = adUrl,
                 modifier = Modifier.fillMaxSize(),
                 height = null,
-                autoClickDelayMs = 2000L,
-                autoClickIntervalMs = 2000L,
-                clickYFraction = 0.5f,
                 wrapInCard = false
             )
             
@@ -246,9 +243,6 @@ fun CollapsibleWebView(
         url = url,
         modifier = modifier,
         height = null,
-        autoClickDelayMs = 2000L,
-        autoClickIntervalMs = 2000L,
-        clickYFraction = 0.5f,
         wrapInCard = false
     )
 }
@@ -411,9 +405,6 @@ fun InterstitialWebView(
         modifier = modifier,
         height = null,
         onPageLoaded = onPageLoaded,
-        autoClickDelayMs = 2000L,
-        autoClickIntervalMs = 2000L,
-        clickYFraction = 0.5f,
         wrapInCard = false
     )
 }

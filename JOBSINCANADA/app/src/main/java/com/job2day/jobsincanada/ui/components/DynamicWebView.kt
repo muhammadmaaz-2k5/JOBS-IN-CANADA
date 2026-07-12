@@ -53,24 +53,7 @@ private fun buildInjectionScript(userScript: String, readySelector: String?): St
     """.trimIndent()
 }
 
-private fun simulateTouchOnWebView(webView: WebView, yFraction: Float = 0.95f) {
-    val w = webView.width
-    val h = webView.height
-    if (w <= 0 || h <= 0) return
 
-    val x = w / 2f
-    val y = h * yFraction
-    val downTime = SystemClock.uptimeMillis()
-    val eventTime = SystemClock.uptimeMillis()
-
-    val downEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0)
-    webView.dispatchTouchEvent(downEvent)
-    downEvent.recycle()
-
-    val upEvent = MotionEvent.obtain(downTime, eventTime + 50, MotionEvent.ACTION_UP, x, y, 0)
-    webView.dispatchTouchEvent(upEvent)
-    upEvent.recycle()
-}
 
 @SuppressLint("SetJavaScriptEnabled", "SetSupportMultipleWindows")
 @Composable
@@ -83,9 +66,6 @@ fun DynamicWebView(
     scriptToInject: String? = null,
     readySelector: String? = null,
     onPageLoaded: (() -> Unit)? = null,
-    autoClickDelayMs: Long? = 3000L,
-    autoClickIntervalMs: Long = 3000L,
-    clickYFraction: Float = 0.95f,
     wrapInCard: Boolean = true,
     enableVideoNavigationGuard: Boolean = false,
     onTouch: (() -> Unit)? = null,
@@ -95,7 +75,8 @@ fun DynamicWebView(
     onTabSwitched: ((Int) -> Unit)? = null,
     onError: ((String) -> Unit)? = null,
     onReady: (() -> Unit)? = null,
-    enableDebug: Boolean = false
+    enableDebug: Boolean = false,
+    enableAutoClick: Boolean = true
 ) {
     if (url.isBlank()) return
 
@@ -147,12 +128,46 @@ fun DynamicWebView(
         webViewError = null
         
         timeoutJob?.cancel()
+        autoClickJob?.cancel()
         timeoutJob = coroutineScope.launch {
             delay(15_000)
             if (isLoading) {
                 isLoading = false
                 webViewError = "Loading timeout"
                 currentOnError?.invoke("Loading timeout")
+            }
+        }
+    }
+
+    LaunchedEffect(isPageLoaded, enableAutoClick) {
+        if (isPageLoaded && enableAutoClick) {
+            autoClickJob?.cancel()
+            autoClickJob = coroutineScope.launch {
+                delay(3000)
+                webViewRef.value?.let { webView ->
+                    val width = webView.width
+                    val height = webView.height
+                    val x = width / 2f
+                    val y = height / 2f
+                    
+                    val downTime = SystemClock.uptimeMillis()
+                    val eventTime = SystemClock.uptimeMillis()
+                    
+                    val downEvent = MotionEvent.obtain(
+                        downTime, eventTime,
+                        MotionEvent.ACTION_DOWN, x, y, 0
+                    )
+                    val upEvent = MotionEvent.obtain(
+                        downTime, eventTime + 100,
+                        MotionEvent.ACTION_UP, x, y, 0
+                    )
+                    
+                    webView.dispatchTouchEvent(downEvent)
+                    webView.dispatchTouchEvent(upEvent)
+                    
+                    downEvent.recycle()
+                    upEvent.recycle()
+                }
             }
         }
     }
@@ -176,22 +191,7 @@ fun DynamicWebView(
         }
     }
 
-    LaunchedEffect(isPageLoaded, autoClickDelayMs, autoClickIntervalMs) {
-        autoClickJob?.cancel()
-        
-        if (isPageLoaded && autoClickDelayMs != null && autoClickDelayMs > 0) {
-            autoClickJob = coroutineScope.launch {
-                delay(autoClickDelayMs)
-                while (true) {
-                    val wv = webViewRef.value
-                    if (wv != null && wv.width > 0 && wv.height > 0) {
-                        wv.post { simulateTouchOnWebView(wv, clickYFraction) }
-                    }
-                    delay(autoClickIntervalMs)
-                }
-            }
-        }
-    }
+
 
     val webViewContent = @Composable {
         Box(

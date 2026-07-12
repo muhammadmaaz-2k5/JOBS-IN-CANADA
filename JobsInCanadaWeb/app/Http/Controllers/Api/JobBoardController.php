@@ -159,7 +159,6 @@ class JobBoardController extends Controller
             'ads_enabled' => SiteSetting::get('ads_enabled', 'false'),
             'enable_webview_ads' => SiteSetting::get('enable_webview_ads', 'false'),
             'webview_ad_url' => SiteSetting::get('webview_ad_url', 'https://nazaarabox.com'),
-            'app_mode' => SiteSetting::get('app_mode', 'live'),
         ]);
     }
 

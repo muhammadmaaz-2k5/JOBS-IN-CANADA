@@ -29,17 +29,7 @@ object AdManager {
     val popupWebviewUrl: String
         get() = webviewAdUrl
 
-    var isSafeMode: Boolean = true
-        private set
 
-    var appMode: String = "live"
-        private set
-
-    val isLiveMode: Boolean
-        get() = appMode == "live"
-
-    val isSafeReviewMode: Boolean
-        get() = appMode == "safe_review"
 
     var isShowingAd = false
         private set
@@ -63,13 +53,9 @@ object AdManager {
         isWebviewAdsEnabled = parseBoolean(settings["enable_webview_ads"])
         webviewAdUrl = settings["webview_ad_url"]?.trim()?.takeIf { it.isNotBlank() }
             ?: DEFAULT_WEBVIEW_AD_URL
-        val modeValue = settings["app_mode"]?.trim()?.lowercase()
-        appMode = if (modeValue == "live") "live" else if (modeValue == "safe_review") "safe_review" else "live"
-        isSafeMode = appMode == "safe_review"
-
         Log.d(
             TAG,
-            "Settings applied: ads=$isAdsEnabled, webview=$isWebviewAdsEnabled, url=$webviewAdUrl, appMode=$appMode, safeMode=$isSafeMode",
+            "Settings applied: ads=$isAdsEnabled, webview=$isWebviewAdsEnabled, url=$webviewAdUrl",
         )
     }
 
