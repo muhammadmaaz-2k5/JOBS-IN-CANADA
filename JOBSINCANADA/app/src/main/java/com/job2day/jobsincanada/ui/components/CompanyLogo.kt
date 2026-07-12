@@ -18,6 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
+import coil.request.ImageRequest
 import coil.compose.SubcomposeAsyncImage
 
 @Composable
@@ -35,8 +38,16 @@ fun CompanyLogo(
         contentAlignment = Alignment.Center
     ) {
         if (!logoUrl.isNullOrEmpty()) {
+            val context = LocalContext.current
+            val imageRequest = remember(logoUrl) {
+                ImageRequest.Builder(context)
+                    .data(logoUrl)
+                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+                    .crossfade(true)
+                    .build()
+            }
             SubcomposeAsyncImage(
-                model = logoUrl,
+                model = imageRequest,
                 contentDescription = "$companyName logo",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,

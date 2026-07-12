@@ -106,7 +106,8 @@ class JobBoardController extends Controller
         }
 
         $perPage = min((int) $request->get('per_page', 20), 100);
-        $jobs = $query->latest('posted_at')->latest()->paginate($perPage);
+        $jobs = $query->orderByRaw('CASE WHEN posted_at > updated_at THEN posted_at ELSE updated_at END DESC')
+            ->paginate($perPage);
 
         $jobs->getCollection()->transform(fn ($job) => $this->jobToMap($job));
 

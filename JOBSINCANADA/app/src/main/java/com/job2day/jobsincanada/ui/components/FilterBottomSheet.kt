@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.job2day.jobsincanada.data.Category
-import com.job2day.jobsincanada.data.MockData
 import com.job2day.jobsincanada.ui.theme.Typography
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -39,7 +38,18 @@ fun FilterBottomSheet(
     var selectedCategory by remember { mutableStateOf(currentFilters["category"] as? String) }
 
     val jobTypes = listOf("Full-Time", "Part-Time", "Contract", "Internship", "Remote")
-    val provinces = MockData.provinces
+    val provinces = listOf(
+        "Ontario",
+        "British Columbia",
+        "Quebec",
+        "Alberta",
+        "Manitoba",
+        "Saskatchewan",
+        "Nova Scotia",
+        "New Brunswick",
+        "Newfoundland",
+        "Prince Edward Island"
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,

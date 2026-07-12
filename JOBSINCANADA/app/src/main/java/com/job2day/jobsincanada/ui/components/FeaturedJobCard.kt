@@ -154,46 +154,11 @@ fun FeaturedJobCard(
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            // Row 5: Avatars + Applied count + Arrow
+            // Row 5: Arrow Button
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Avatars overlap container
-                Box(
-                    modifier = Modifier.width(60.dp).height(24.dp)
-                ) {
-                    val avatarColors = listOf(Color(0xFFE2E8F0), Color(0xFFCBD5E1), Color(0xFF94A3B8))
-                    for (i in 0 until 3) {
-                        Box(
-                            modifier = Modifier
-                                .padding(start = (i * 14).dp)
-                                .size(24.dp)
-                                .clip(CircleShape)
-                                .background(cardColor)
-                                .padding(1.5.dp)
-                                .clip(CircleShape)
-                                .background(avatarColors[i]),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = listOf("A", "M", "J")[i],
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.DarkGray
-                            )
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Text(
-                    text = "${job.applicants}+ applied",
-                    style = Typography.labelSmall,
-                    color = mutedTextColor
-                )
-                
                 Spacer(modifier = Modifier.weight(1f))
                 
                 Box(

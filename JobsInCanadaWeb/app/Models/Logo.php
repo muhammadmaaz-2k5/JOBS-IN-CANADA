@@ -14,4 +14,13 @@ class Logo extends Model
     protected $casts = [
         'sort_order' => 'integer',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saved(function (self $logo) {
+            Company::where('name', $logo->name)->update(['logo' => $logo->url]);
+        });
+    }
 }
