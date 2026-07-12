@@ -35,6 +35,8 @@ import com.job2day.jobsincanada.data.ApiService
 import com.job2day.jobsincanada.data.Category
 import com.job2day.jobsincanada.data.JobListing
 import com.job2day.jobsincanada.service.BookmarkService
+import androidx.compose.foundation.border
+import com.job2day.jobsincanada.ui.components.AdmobNativeAd
 import com.job2day.jobsincanada.ui.components.EmptyState
 import com.job2day.jobsincanada.ui.components.FilterBottomSheet
 import com.job2day.jobsincanada.ui.components.SearchJobCard
@@ -135,7 +137,12 @@ fun JobSearchScreen(
 
     LaunchedEffect(key1 = initialQuery) {
         if (initialQuery != null) {
-            query = initialQuery
+            if (initialQuery == "FILTER_TODAY") {
+                query = ""
+                activeFilters = mapOf("todayOnly" to true)
+            } else {
+                query = initialQuery
+            }
             onConsumeInitialQuery()
         }
     }
@@ -577,6 +584,18 @@ fun JobSearchScreen(
                                 jobsList[index] = jobs[index].copy(isSaved = savedIds.contains(job.id))
                             }
                         )
+
+                        if (ApiService.adsEnabled && (index + 1) % 4 == 0) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            AdmobNativeAd(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                     if (isLoading) {
                         item {

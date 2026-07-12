@@ -13,6 +13,7 @@ import java.net.URL
 object ApiService {
     private const val TAG = "ApiService"
     private var baseUrl: String = "http://10.0.2.2:8000/api"
+    var adsEnabled: Boolean = false
 
     fun initialize(context: android.content.Context) {
         val prefs = context.getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
@@ -148,6 +149,7 @@ object ApiService {
                         icon = obj.optString("icon"),
                         color = obj.optString("color"),
                         iconColor = obj.optString("icon_color", obj.optString("iconColor")),
+                        content = obj.optString("content"),
                         url = obj.optString("url")
                     )
                 )
@@ -163,6 +165,8 @@ object ApiService {
         val jsonStr = makeGetRequest("/settings") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/settings")
         try {
             val obj = JSONObject(jsonStr)
+            val adsVal = obj.optString("ads_enabled", "false")
+            adsEnabled = adsVal == "true" || adsVal == "1"
             return mapOf(
                 "jobsToday" to obj.optInt("jobsToday", 4),
                 "jobsThisWeek" to obj.optInt("jobsThisWeek", 15)

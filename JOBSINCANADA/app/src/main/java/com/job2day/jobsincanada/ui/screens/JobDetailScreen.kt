@@ -21,6 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,95 +104,7 @@ fun JobDetailScreen(
         )
     }
 
-    Scaffold(
-        bottomBar = {
-            // Premium Bottom Action Bar
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 14.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Bookmark Circular Button
-                    IconButton(
-                        onClick = {
-                            BookmarkService.toggleSave(context, job.id)
-                            isSaved = BookmarkService.isSaved(context, job.id)
-                        },
-                        modifier = Modifier
-                            .size(54.dp)
-                            .border(
-                                1.dp, 
-                                if (isSaved) tintColor else MaterialTheme.colorScheme.outline, 
-                                CircleShape
-                            )
-                            .background(
-                                if (isSaved) tintColor.copy(alpha = 0.08f) else Color.Transparent,
-                                CircleShape
-                            )
-                    ) {
-                        Icon(
-                            imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                            contentDescription = "Save",
-                            tint = if (isSaved) tintColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    // Gradient Apply Now Button
-                    Button(
-                        onClick = {
-                            try {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(job.applyUrl))
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Could not open job application link", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = PaddingValues(),
-                        shape = RoundedCornerShape(100.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(54.dp)
-                            .shadow(4.dp, RoundedCornerShape(100.dp))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            Color(0xFF2D8A52)
-                                        )
-                                    ),
-                                    RoundedCornerShape(100.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Apply Now",
-                                style = Typography.labelLarge,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -382,6 +297,84 @@ fun JobDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Premium Action Bar (Inline below metrics grid)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Bookmark Circular Button
+                        IconButton(
+                            onClick = {
+                                BookmarkService.toggleSave(context, job.id)
+                                isSaved = BookmarkService.isSaved(context, job.id)
+                            },
+                            modifier = Modifier
+                                .size(54.dp)
+                                .border(
+                                    1.dp, 
+                                    if (isSaved) tintColor else MaterialTheme.colorScheme.outlineVariant, 
+                                    CircleShape
+                                )
+                                .background(
+                                    if (isSaved) tintColor.copy(alpha = 0.08f) else Color.Transparent,
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                contentDescription = "Save",
+                                tint = if (isSaved) tintColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        // Gradient Apply Now Button
+                        Button(
+                            onClick = {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(job.applyUrl))
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Could not open job application link", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues(),
+                            shape = RoundedCornerShape(100.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(54.dp)
+                                .shadow(4.dp, RoundedCornerShape(100.dp))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.primary,
+                                                Color(0xFF2D8A52)
+                                            )
+                                        ),
+                                        RoundedCornerShape(100.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Apply Now",
+                                    style = Typography.labelLarge,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
                     // Job Description Card
                     Card(
                         shape = RoundedCornerShape(20.dp),
@@ -420,11 +413,9 @@ fun JobDetailScreen(
                             
                             Spacer(modifier = Modifier.height(14.dp))
                             
-                            Text(
-                                text = job.description,
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                lineHeight = 24.sp
+                            MarkdownText(
+                                markdown = job.description,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
@@ -571,29 +562,6 @@ fun JobDetailScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 22.sp
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = {
-                                    try {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(job.applyUrl))
-                                        context.startActivity(intent)
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Could not open website", Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.primary
-                                ),
-                                shape = RoundedCornerShape(100.dp),
-                                modifier = Modifier.fillMaxWidth().height(48.dp)
-                            ) {
-                                Text(
-                                    text = "Visit Employer Website",
-                                    style = Typography.labelLarge,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
                         }
                     }
 
@@ -731,6 +699,98 @@ fun JobDetailScreen(
                         Text(text = "Share Info", style = Typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun MarkdownText(
+    markdown: String,
+    modifier: Modifier = Modifier
+) {
+    val lines = markdown.split("\n")
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        lines.forEach { line ->
+            val trimmed = line.trim()
+            when {
+                trimmed.startsWith("###") -> {
+                    Text(
+                        text = trimmed.removePrefix("###").trim(),
+                        style = Typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
+                    )
+                }
+                trimmed.startsWith("##") -> {
+                    Text(
+                        text = trimmed.removePrefix("##").trim(),
+                        style = Typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(top = 12.dp, bottom = 6.dp)
+                    )
+                }
+                trimmed.startsWith("#") -> {
+                    Text(
+                        text = trimmed.removePrefix("#").trim(),
+                        style = Typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(top = 14.dp, bottom = 8.dp)
+                    )
+                }
+                trimmed.startsWith("-") || trimmed.startsWith("*") -> {
+                    val bulletText = if (trimmed.startsWith("-")) trimmed.removePrefix("-").trim() else trimmed.removePrefix("*").trim()
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = "•",
+                            style = Typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = parseBoldText(bulletText),
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            lineHeight = 22.sp
+                        )
+                    }
+                }
+                trimmed.isEmpty() -> {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                else -> {
+                    Text(
+                        text = parseBoldText(trimmed),
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 22.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+fun parseBoldText(text: String): AnnotatedString {
+    return buildAnnotatedString {
+        val parts = text.split("**")
+        parts.forEachIndexed { index, part ->
+            if (index % 2 == 1) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(part)
+                }
+            } else {
+                append(part)
             }
         }
     }

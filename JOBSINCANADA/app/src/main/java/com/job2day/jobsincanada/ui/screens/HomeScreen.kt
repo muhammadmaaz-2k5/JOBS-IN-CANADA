@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onNavigateToJobDetail: (JobListing) -> Unit,
+    onNavigateToResourceDetail: (CareerResource) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -501,7 +502,10 @@ fun HomeScreen(
             // Stats Banner
             TodayJobsBanner(
                 todayCount = jobsTodayCount,
-                weekCount = jobsThisWeekCount
+                weekCount = jobsThisWeekCount,
+                onClick = {
+                    onNavigateToSearch("FILTER_TODAY")
+                }
             )
 
             // 1. Featured Jobs Section
@@ -719,14 +723,7 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        if (!res.url.isNullOrEmpty()) {
-                                            try {
-                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(res.url))
-                                                context.startActivity(intent)
-                                            } catch (e: java.lang.Exception) {
-                                                android.widget.Toast.makeText(context, "Could not open link", android.widget.Toast.LENGTH_SHORT).show()
-                                            }
-                                        }
+                                        onNavigateToResourceDetail(res)
                                     }
                                     .padding(horizontal = 16.dp, vertical = 14.dp)
                             ) {

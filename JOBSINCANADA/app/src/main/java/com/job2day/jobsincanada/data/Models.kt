@@ -23,6 +23,7 @@ data class CareerResource(
     val icon: String,
     val color: String,
     val iconColor: String,
+    val content: String = "",
     val url: String = ""
 )
 

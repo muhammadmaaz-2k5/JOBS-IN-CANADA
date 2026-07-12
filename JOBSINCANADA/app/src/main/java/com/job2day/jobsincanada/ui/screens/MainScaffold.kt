@@ -1,7 +1,9 @@
 package com.job2day.jobsincanada.ui.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -16,12 +18,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.job2day.jobsincanada.data.CareerResource
 import com.job2day.jobsincanada.data.JobListing
+import com.job2day.jobsincanada.ui.components.AdmobBanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold(
     onNavigateToJobDetail: (JobListing) -> Unit,
+    onNavigateToResourceDetail: (CareerResource) -> Unit,
     modifier: Modifier = Modifier,
     initialTab: Int = 0
 ) {
@@ -30,10 +35,12 @@ fun MainScaffold(
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
-            ) {
+            Column {
+                AdmobBanner(modifier = Modifier.fillMaxWidth())
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 8.dp
+                ) {
                 // Home Tab
                 NavigationBarItem(
                     selected = selectedTab == 0,
@@ -101,6 +108,7 @@ fun MainScaffold(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 )
+                }
             }
         }
     ) { innerPadding ->
@@ -112,6 +120,7 @@ fun MainScaffold(
             when (selectedTab) {
                 0 -> HomeScreen(
                     onNavigateToJobDetail = onNavigateToJobDetail,
+                    onNavigateToResourceDetail = onNavigateToResourceDetail,
                     onNavigateToSearch = { query ->
                         searchQueryState = query
                         selectedTab = 1

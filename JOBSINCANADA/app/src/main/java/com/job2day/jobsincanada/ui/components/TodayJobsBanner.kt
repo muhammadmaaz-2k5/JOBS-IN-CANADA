@@ -1,6 +1,7 @@
 package com.job2day.jobsincanada.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,6 +25,7 @@ import com.job2day.jobsincanada.ui.theme.Typography
 fun TodayJobsBanner(
     todayCount: Int,
     weekCount: Int,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -33,6 +35,7 @@ fun TodayJobsBanner(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp)
             .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() }
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
