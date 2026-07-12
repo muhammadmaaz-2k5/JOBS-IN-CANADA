@@ -2,6 +2,8 @@ package com.job2day.jobsincanada.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -539,7 +541,16 @@ fun HomeScreen(
                     featuredJobs.forEach { job ->
                         FeaturedJobCard(
                             job = job,
-                            onTap = { onNavigateToJobDetail(job) },
+                            onTap = {
+                                val activity = context.findActivity()
+                                if (activity != null) {
+                                    com.job2day.jobsincanada.utils.AdManager.showWebviewAd(activity) {
+                                        onNavigateToJobDetail(job)
+                                    }
+                                } else {
+                                    onNavigateToJobDetail(job)
+                                }
+                            },
                             onBookmarkToggle = {
                                 BookmarkService.toggleSave(context, job.id)
                                 loadHomeData()
@@ -582,7 +593,16 @@ fun HomeScreen(
                     recommendedJobs.forEach { job ->
                         RecommendedJobCard(
                             job = job,
-                            onTap = { onNavigateToJobDetail(job) },
+                            onTap = {
+                                val activity = context.findActivity()
+                                if (activity != null) {
+                                    com.job2day.jobsincanada.utils.AdManager.showWebviewAd(activity) {
+                                        onNavigateToJobDetail(job)
+                                    }
+                                } else {
+                                    onNavigateToJobDetail(job)
+                                }
+                            },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -689,6 +709,13 @@ fun HomeScreen(
                 )
             }
 
+            com.job2day.jobsincanada.ui.components.InlineBannerAd(
+                placement = "home_middle",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
             // 5. Career Resources Section
             if (careerResources.isNotEmpty()) {
                 Row(
@@ -784,4 +811,13 @@ fun HomeScreen(
     }
 }
 }
+}
+
+private fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }

@@ -41,14 +41,46 @@ class JobBoardSeeder extends Seeder
             ['name' => 'RBC', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Royal_Bank_of_Canada_Logo.svg/512px-Royal_Bank_of_Canada_Logo.svg.png', 'website' => 'https://www.rbc.com', 'sort_order' => 10],
         ];
         foreach ($companies as $c) {
-            Company::updateOrCreate(['name' => $c['name']], $c);
+            Company::firstOrCreate(['name' => $c['name']], $c);
         }
 
         $resources = [
-            ['title' => 'Resume Review', 'subtitle' => 'Get expert feedback on your Canadian resume', 'icon' => 'description_outlined', 'color' => '#DBEAFE', 'icon_color' => '#2563EB', 'sort_order' => 1],
-            ['title' => 'Interview Tips', 'subtitle' => 'Ace your next Canadian job interview', 'icon' => 'chat_bubble_outline_rounded', 'color' => '#DCFCE7', 'icon_color' => '#16A34A', 'sort_order' => 2],
-            ['title' => 'Salary Insights', 'subtitle' => 'Know your worth in the Canadian market', 'icon' => 'insights_rounded', 'color' => '#FEF3C7', 'icon_color' => '#D97706', 'sort_order' => 3],
-            ['title' => 'Work Permit Guide', 'subtitle' => 'Understand LMIA & work authorization in Canada', 'icon' => 'school_outlined', 'color' => '#F3E8FF', 'icon_color' => '#A855F7', 'sort_order' => 4],
+            [
+                'title' => 'Resume Review',
+                'subtitle' => 'Get expert feedback on your Canadian resume',
+                'icon' => 'description_outlined',
+                'color' => '#DBEAFE',
+                'icon_color' => '#2563EB',
+                'sort_order' => 1,
+                'content' => "# Writing a Canadian-Style Resume\n\nYour resume is the first impression you make on Canadian employers. Here is how to format it for success:\n\n## Format and Layout\n- **Reverse Chronological**: List your most recent experience first.\n- **One to Two Pages**: Keep it concise. Senior roles can be two pages.\n- **No Personal Details**: Never include your photo, date of birth, gender, marital status, or SIN.\n- **Contact Details**: Name, email, phone number, and city/province of residence (e.g. Toronto, ON). Include your LinkedIn profile.\n\n## Best Practices\n- **Action Verbs**: Start each bullet point with a strong action verb (e.g. Led, Developed, Managed).\n- **Quantified Results**: Show metrics. E.g. \"Increased sales by 15%\" instead of \"Responsible for sales\".\n- **Targeted Keywords**: Adapt your resume to match the job description keywords."
+            ],
+            [
+                'title' => 'Interview Tips',
+                'subtitle' => 'Ace your next Canadian job interview',
+                'icon' => 'chat_bubble_outline_rounded',
+                'color' => '#DCFCE7',
+                'icon_color' => '#16A34A',
+                'sort_order' => 2,
+                'content' => "# Acing Your Canadian Job Interview\n\nCanadian employers value soft skills, cultural fit, and structured technical responses.\n\n## Preparation Steps\n- **Research the Company**: Learn about their values, products, and recent news.\n- **Master the STAR Method**:\n    - **S**ituation: Set the scene.\n    - **T**ask: What needed to be done.\n    - **A**ction: What you did.\n    - **R**esult: What was achieved (quantified).\n- **Practice Active Listening**: Take a moment to formulate your thoughts before replying.\n\n## Key Cultural Aspects\n- **Punctuality**: Arrive/Join 5 minutes early.\n- **Professionalism**: Dress appropriately, even for virtual interviews.\n- **Follow Up**: Send a brief thank-you email within 24 hours."
+            ],
+            [
+                'title' => 'Salary Insights',
+                'subtitle' => 'Know your worth in the Canadian market',
+                'icon' => 'insights_rounded',
+                'color' => '#FEF3C7',
+                'icon_color' => '#D97706',
+                'sort_order' => 3,
+                'content' => "# Salary Insights & Negotiation\n\nUnderstanding compensation structures is key to securing a fair offer in Canada.\n\n## Market Research\n- **Research Averages**: Use platforms like Glassdoor, Indeed, and the Government of Canada Job Bank to check average rates for your role.\n- **Local Variations**: Salaries in major hubs like Toronto and Vancouver are higher, but cost of living is also higher.\n\n## Understanding Your Package\n- **Gross vs Net Salary**: Understand your take-home pay after provincial and federal income taxes.\n- **Benefits**: Look at health insurance, dental coverage, paid time off, and RRSP matching contributions.\n- **Negotiation**: Always let the employer make the first offer, then counter politely based on market data."
+            ],
+            [
+                'title' => 'Work Permit Guide',
+                'subtitle' => 'Understand LMIA & work authorization in Canada',
+                'icon' => 'school_outlined',
+                'color' => '#F3E8FF',
+                'icon_color' => '#A855F7',
+                'sort_order' => 4,
+                'content' => "# Work Permit & Visa Guide\n\nTo work in Canada legally, you must obtain the correct work authorization.\n\n## Main Work Permit Types\n- **Open Work Permits**: Allows you to work for any employer (e.g., PGWP for graduates, Spousal Work Permits).\n- **Employer-Specific Work Permits**: Tied to a single employer, usually requiring a Labour Market Impact Assessment (LMIA).\n\n## Popular Pathways\n- **Express Entry**: The Federal Skilled Worker program for skilled immigrants.\n- **Provincial Nominee Programs (PNP)**: Run by individual provinces to fill specific labour needs.\n- **Post-Graduation Work Permit (PGWP)**: For international students who graduated from a Canadian DLI."
+            ],
         ];
         foreach ($resources as $r) {
             CareerResource::updateOrCreate(['title' => $r['title']], $r);

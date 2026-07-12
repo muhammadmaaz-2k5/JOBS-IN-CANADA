@@ -44,6 +44,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             JOBSINCANADATheme {
+                val showInterstitialAd by com.job2day.jobsincanada.utils.AdManager.showInterstitial.collectAsState()
+                if (showInterstitialAd) {
+                    com.job2day.jobsincanada.ui.components.CustomInterstitialAd(
+                        adUrl = com.job2day.jobsincanada.utils.AdManager.popupWebviewUrl,
+                        onDismiss = {
+                            com.job2day.jobsincanada.utils.AdManager.dismissInterstitial()
+                        }
+                    )
+                }
+
                 var currentScreen by remember { mutableStateOf(AppScreen.Splash) }
                 var selectedJobDetail by remember { mutableStateOf<JobListing?>(null) }
                 var selectedResourceDetail by remember { mutableStateOf<CareerResource?>(null) }

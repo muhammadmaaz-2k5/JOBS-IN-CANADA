@@ -48,6 +48,11 @@
                 <label for="icon_color">Icon Color</label>
                 <input type="text" id="icon_color" name="icon_color" value="{{ old('icon_color', $resource->icon_color ?? '#2563EB') }}">
             </div>
+
+            <div class="field full">
+                <label for="content">Content <span class="hint">(Markdown supported)</span></label>
+                <textarea id="content" name="content" style="height: 250px; font-family: monospace;">{{ old('content', $resource->content ?? '') }}</textarea>
+            </div>
         </div>
 
         <div class="actions" style="margin-top:22px;">

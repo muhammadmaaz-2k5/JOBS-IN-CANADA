@@ -32,6 +32,7 @@ class CareerResourceController extends Controller
             'color' => ['nullable', 'string', 'max:9'],
             'icon_color' => ['nullable', 'string', 'max:9'],
             'sort_order' => ['nullable', 'integer'],
+            'content' => ['nullable', 'string'],
         ]);
 
         CareerResource::create($data);
@@ -55,6 +56,7 @@ class CareerResourceController extends Controller
             'color' => ['nullable', 'string', 'max:9'],
             'icon_color' => ['nullable', 'string', 'max:9'],
             'sort_order' => ['nullable', 'integer'],
+            'content' => ['nullable', 'string'],
         ]);
 
         $resource->update($data);

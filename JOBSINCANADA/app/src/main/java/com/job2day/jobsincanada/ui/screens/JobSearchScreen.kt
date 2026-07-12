@@ -1,5 +1,7 @@
 package com.job2day.jobsincanada.ui.screens
 
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -575,7 +577,16 @@ fun JobSearchScreen(
                     itemsIndexed(jobs) { index, job ->
                         SearchJobCard(
                             job = job,
-                            onTap = { onNavigateToJobDetail(job) },
+                            onTap = {
+                                val activity = context.findActivity()
+                                if (activity != null) {
+                                    com.job2day.jobsincanada.utils.AdManager.showWebviewAd(activity) {
+                                        onNavigateToJobDetail(job)
+                                    }
+                                } else {
+                                    onNavigateToJobDetail(job)
+                                }
+                            },
                             onBookmarkToggle = {
                                 BookmarkService.toggleSave(context, job.id)
                                 val savedIds = BookmarkService.getSavedJobIds(context)
@@ -665,4 +676,13 @@ fun JobSearchScreen(
             )
         }
     }
+}
+
+private fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }

@@ -38,7 +38,7 @@ fun AdmobBanner(
     modifier: Modifier = Modifier,
     adUnitId: String = "ca-app-pub-3940256099942544/9214589741" // Test Banner ID
 ) {
-    if (!ApiService.adsEnabled) return
+    if (!ApiService.adsEnabled || com.job2day.jobsincanada.utils.AdManager.isSafeMode) return
 
     val context = LocalContext.current
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
@@ -102,7 +102,7 @@ fun AdmobNativeAd(
     modifier: Modifier = Modifier,
     adUnitId: String = "ca-app-pub-3940256099942544/2247696110" // Test Native Ad Unit
 ) {
-    if (!ApiService.adsEnabled) return
+    if (!ApiService.adsEnabled || com.job2day.jobsincanada.utils.AdManager.isSafeMode) return
 
     val context = LocalContext.current
     var loadedAd by remember { mutableStateOf<NativeAd?>(null) }

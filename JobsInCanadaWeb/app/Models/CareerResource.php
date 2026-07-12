@@ -9,7 +9,7 @@ class CareerResource extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'slug', 'subtitle', 'icon', 'color', 'icon_color', 'sort_order'];
+    protected $fillable = ['title', 'slug', 'subtitle', 'icon', 'color', 'icon_color', 'sort_order', 'content'];
 
     protected $casts = [
         'sort_order' => 'integer',

@@ -165,8 +165,17 @@ object ApiService {
         val jsonStr = makeGetRequest("/settings") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/settings")
         try {
             val obj = JSONObject(jsonStr)
-            val adsVal = obj.optString("ads_enabled", "false")
-            adsEnabled = adsVal == "true" || adsVal == "1"
+            
+            val settingsMap = mutableMapOf<String, String>()
+            val keys = obj.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                settingsMap[key] = obj.optString(key, "")
+            }
+            com.job2day.jobsincanada.utils.AdManager.applySettings(settingsMap)
+            
+            adsEnabled = com.job2day.jobsincanada.utils.AdManager.isAdsEnabled
+            
             return mapOf(
                 "jobsToday" to obj.optInt("jobsToday", 4),
                 "jobsThisWeek" to obj.optInt("jobsThisWeek", 15)

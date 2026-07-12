@@ -135,6 +135,7 @@ class JobBoardController extends Controller
                 'subtitle' => $r->subtitle,
                 'color' => $r->color,
                 'iconColor' => $r->icon_color,
+                'content' => $r->content,
             ]);
 
         return response()->json($resources);
