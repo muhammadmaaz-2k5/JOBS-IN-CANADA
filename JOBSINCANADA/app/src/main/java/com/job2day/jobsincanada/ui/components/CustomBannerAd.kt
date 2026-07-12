@@ -8,6 +8,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -74,14 +76,15 @@ fun InlineBannerAd(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .background(SurfaceVariantDarkColor, RoundedCornerShape(12.dp)),
+            .wrapContentHeight(),
         contentAlignment = Alignment.Center,
     ) {
-        CustomBannerAd(
+        CustomSmallCardAd(
             adUrl = AdManager.getAdPlacementUrl(placement),
-            modifier = Modifier.fillMaxWidth(),
-            alwaysExpanded = true,
+            modifier = Modifier
+                .width(100.dp)
+                .height(100.dp),
+            showClose = false,
         )
     }
 }
@@ -408,3 +411,30 @@ fun InterstitialWebView(
         wrapInCard = false
     )
 }
+
+@Composable
+fun AdCardRow(
+    placements: List<String>,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        placements.forEach { placement ->
+            if (AdManager.isAdPlacementEnabled(placement)) {
+                CustomSmallCardAd(
+                    adUrl = AdManager.getAdPlacementUrl(placement),
+                    modifier = Modifier
+                        .weight(1f)
+                        .aspectRatio(1f),
+                    showClose = false
+                )
+            }
+        }
+    }
+}
+

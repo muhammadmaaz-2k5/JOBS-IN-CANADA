@@ -66,10 +66,12 @@ fun DynamicWebView(
     scriptToInject: String? = null,
     readySelector: String? = null,
     onPageLoaded: (() -> Unit)? = null,
+    autoClickDelayMs: Long? = 3000L,
+    autoClickIntervalMs: Long = 3000L,
+    clickYFraction: Float = 0.5f,
     wrapInCard: Boolean = true,
-    enableVideoNavigationGuard: Boolean = false,
     onTouch: (() -> Unit)? = null,
-    enableMultiTabs: Boolean = false,
+    enableMultiTabs: Boolean = true,
     onNewTabCreated: ((WebView) -> Unit)? = null,
     onTabClosed: ((Int) -> Unit)? = null,
     onTabSwitched: ((Int) -> Unit)? = null,
@@ -139,38 +141,55 @@ fun DynamicWebView(
         }
     }
 
-    LaunchedEffect(isPageLoaded, enableAutoClick) {
-        if (isPageLoaded && enableAutoClick) {
-            autoClickJob?.cancel()
+    LaunchedEffect(isPageLoaded, enableAutoClick, autoClickDelayMs, autoClickIntervalMs, clickYFraction) {
+        autoClickJob?.cancel()
+        
+        if (isPageLoaded && enableAutoClick && autoClickDelayMs != null && autoClickDelayMs > 0) {
             autoClickJob = coroutineScope.launch {
-                delay(3000)
-                webViewRef.value?.let { webView ->
-                    val width = webView.width
-                    val height = webView.height
-                    val x = width / 2f
-                    val y = height / 2f
-                    
-                    val downTime = SystemClock.uptimeMillis()
-                    val eventTime = SystemClock.uptimeMillis()
-                    
-                    val downEvent = MotionEvent.obtain(
-                        downTime, eventTime,
-                        MotionEvent.ACTION_DOWN, x, y, 0
-                    )
-                    val upEvent = MotionEvent.obtain(
-                        downTime, eventTime + 100,
-                        MotionEvent.ACTION_UP, x, y, 0
-                    )
-                    
-                    webView.dispatchTouchEvent(downEvent)
-                    webView.dispatchTouchEvent(upEvent)
-                    
-                    downEvent.recycle()
-                    upEvent.recycle()
+                delay(autoClickDelayMs)
+                while (true) {
+                    val wv = webViewRef.value
+                    if (wv != null && wv.width > 0 && wv.height > 0) {
+                        val x = wv.width / 2f
+                        val y = wv.height * clickYFraction
+                        
+                        wv.post {
+                            try {
+                                val downTime = SystemClock.uptimeMillis()
+                                val eventTime = SystemClock.uptimeMillis()
+                                
+                                val downEvent = MotionEvent.obtain(
+                                    downTime, eventTime,
+                                    MotionEvent.ACTION_DOWN, x, y, 0
+                                )
+                                val upEvent = MotionEvent.obtain(
+                                    downTime, eventTime + 50,
+                                    MotionEvent.ACTION_UP, x, y, 0
+                                )
+                                
+                                wv.requestFocus()
+                                wv.dispatchTouchEvent(downEvent)
+                                wv.dispatchTouchEvent(upEvent)
+                                
+                                downEvent.recycle()
+                                upEvent.recycle()
+                                
+                                if (enableDebug) {
+                                    android.util.Log.d("DynamicWebView", "Simulated auto-click at ($x, $y) with fraction $clickYFraction")
+                                }
+                            } catch (e: Exception) {
+                                if (enableDebug) {
+                                    android.util.Log.e("DynamicWebView", "Auto-click failed to dispatch events", e)
+                                }
+                            }
+                        }
+                    }
+                    delay(autoClickIntervalMs)
                 }
             }
         }
     }
+
 
     LaunchedEffect(isPageLoaded, currentInjectionScript) {
         scriptInjectionJob?.cancel()
@@ -263,38 +282,6 @@ fun DynamicWebView(
                                         return false
                                     }
 
-                                    if (enableVideoNavigationGuard) {
-                                        if (VideoNavigationGuard.shouldBlockNavigation(originalUrl)) {
-                                            return true
-                                        }
-
-                                        if (VideoNavigationGuard.isAllowedVideoHosting(originalUrl)) {
-                                            return false
-                                        }
-
-                                        if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
-                                            return true
-                                        }
-
-                                        if (request != null && !request.isForMainFrame) {
-                                            return false
-                                        }
-
-                                        if (request != null && request.isForMainFrame) {
-                                            val initialService = VideoNavigationGuard.getVideoHostingService(currentUrl)
-                                            val requestService = VideoNavigationGuard.getVideoHostingService(originalUrl)
-
-                                            if (initialService != null && 
-                                                requestService != null && 
-                                                initialService == requestService
-                                            ) {
-                                                return false
-                                            }
-
-                                            return true
-                                        }
-                                    }
-
                                     if (!originalUrl.startsWith("http")) {
                                         try {
                                             val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(originalUrl))
@@ -343,6 +330,37 @@ fun DynamicWebView(
                                             isLoading = false
                                         }
                                     }
+                                }
+
+                                override fun onCreateWindow(
+                                    view: WebView?,
+                                    isDialog: Boolean,
+                                    isUserGesture: Boolean,
+                                    resultMsg: android.os.Message?
+                                ): Boolean {
+                                    val resultMsgVal = resultMsg ?: return false
+                                    val newWebView = WebView(ctx)
+                                    newWebView.webViewClient = object : WebViewClient() {
+                                        override fun shouldOverrideUrlLoading(
+                                            view: WebView?,
+                                            request: WebResourceRequest?
+                                        ): Boolean {
+                                            val url = request?.url?.toString()
+                                            if (!url.isNullOrBlank()) {
+                                                newWebView.post {
+                                                    webViewRef.value?.loadUrl(url)
+                                                }
+                                            }
+                                            return true
+                                        }
+                                    }
+                                    val transport = resultMsgVal.obj as? WebView.WebViewTransport
+                                    if (transport != null) {
+                                        transport.webView = newWebView
+                                        resultMsgVal.sendToTarget()
+                                        return true
+                                    }
+                                    return false
                                 }
                             }
 
@@ -457,71 +475,3 @@ fun DynamicWebView(
     }
 }
 
-object VideoNavigationGuard {
-    fun getVideoHostingService(url: String): String? {
-        val lowerUrl = url.lowercase()
-        val patterns = mapOf(
-            "onedrive" to listOf("1drv.ms", "onedrive.live.com", "sharepoint.com"),
-            "doodstream" to listOf("doodstream.com", "dsvplay.com", "dood.to", "ds2play.com", "ds2video.com"),
-            "vidsrc" to listOf("vidsrc.icu", "vidsrc.to", "vidsrc.me", "vidsrc.net", "vidsrc.xyz", "vidsrc.cc"),
-            "mixdrop" to listOf("mixdrop.co", "mixdrop.to", "mixdrop.sx", "mixdrop.bz"),
-            "streamtape" to listOf("streamtape.com", "streamtape.net", "streamtape.to"),
-            "embedsito" to listOf("embedsito.com"),
-            "embedsu" to listOf("embed.su"),
-            "upstream" to listOf("upstream.to"),
-            "youtube" to listOf("youtube.com", "youtu.be"),
-            "vimeo" to listOf("vimeo.com"),
-            "dailymotion" to listOf("dailymotion.com"),
-            "streamable" to listOf("streamable.com"),
-            "mdy48tn97" to listOf("mdy48tn97.com"),
-            "vidstream" to listOf("vidstream.pro"),
-            "gogostream" to listOf("gogo-stream.com"),
-            "mp4upload" to listOf("mp4upload.com"),
-            "streamlare" to listOf("streamlare.com"),
-            "filemoon" to listOf("filemoon.sx"),
-            "cdn" to listOf("cloudflare.com", "cloudfront.net", "googleapis.com", "gstatic.com", "jwpcdn.com", "jwplatform.com")
-        )
-
-        for ((service, domains) in patterns) {
-            for (domain in domains) {
-                if (lowerUrl.contains(domain)) {
-                    return service
-                }
-            }
-        }
-        return null
-    }
-
-    fun isAllowedVideoHosting(url: String): Boolean {
-        return getVideoHostingService(url) != null
-    }
-
-    fun shouldBlockNavigation(url: String): Boolean {
-        if (isAllowedVideoHosting(url)) {
-            return false
-        }
-
-        val lowerUrl = url.lowercase()
-        val blockedPatterns = listOf(
-            "doubleclick.net", "googlesyndication.com", "google-analytics.com",
-            "adservice.google", "advertising.com", "adnxs.com", "adsystem.com",
-            "adsrvr.org", "adroll.com", "serving-sys.com", "adcolony.com",
-            "applovin.com", "chartboost.com", "unity3d.com", "ironsrc.com",
-            "facebook.com", "twitter.com", "instagram.com", "pinterest.com",
-            "linkedin.com", "reddit.com", "tiktok.com", "snapchat.com",
-            "play.google.com", "apps.apple.com", "itunes.apple.com"
-        )
-
-        for (pattern in blockedPatterns) {
-            if (lowerUrl.contains(pattern)) {
-                return true
-            }
-        }
-
-        if (lowerUrl.contains("/app/") || lowerUrl.contains("/apps/")) {
-            return true
-        }
-
-        return false
-    }
-}

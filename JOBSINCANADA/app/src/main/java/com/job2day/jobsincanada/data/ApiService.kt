@@ -286,4 +286,73 @@ object ApiService {
             throw e
         }
     }
+
+    suspend fun getJob(id: Int): JobListing = withContext(Dispatchers.IO) {
+        val jsonStr = makeGetRequest("/jobs/$id") ?: throw java.io.IOException("Failed to connect to the server at $baseUrl/jobs/$id")
+        try {
+            val obj = JSONObject(jsonStr)
+            
+            val skillsArr = obj.optJSONArray("skills")
+            val skillsList = mutableListOf<String>()
+            if (skillsArr != null) {
+                for (j in 0 until skillsArr.length()) {
+                    skillsList.add(skillsArr.getString(j))
+                }
+            }
+
+            val avatarsArr = obj.optJSONArray("applicantAvatars")
+            val avatarsList = mutableListOf<String>()
+            if (avatarsArr != null) {
+                for (j in 0 until avatarsArr.length()) {
+                    avatarsList.add(avatarsArr.getString(j))
+                }
+            } else {
+                avatarsList.addAll(listOf(
+                    "https://randomuser.me/api/portraits/men/32.jpg",
+                    "https://randomuser.me/api/portraits/women/44.jpg",
+                    "https://randomuser.me/api/portraits/men/12.jpg"
+                ))
+            }
+
+            var compName = obj.optString("company")
+            var compLogo = obj.optStringOrNull("companyLogo", "logo") ?: ""
+            if (obj.has("company_relation") && !obj.isNull("company_relation")) {
+                val compObj = obj.getJSONObject("company_relation")
+                compName = compObj.optString("name", compName)
+                compLogo = compObj.optStringOrNull("logo", "companyLogo") ?: compLogo
+            }
+
+            return@withContext JobListing(
+                id = obj.optInt("id"),
+                title = obj.optString("title"),
+                company = compName,
+                companyLogo = compLogo,
+                category = obj.optString("category_name", obj.optString("category", "Engineering")),
+                salary = obj.optString("salary", "$100K"),
+                salaryPeriod = obj.optString("salary_period", "year"),
+                salaryMin = obj.optInt("salary_min", 100000),
+                location = obj.optString("location", "Toronto, ON"),
+                province = obj.optString("province", "Ontario"),
+                jobType = obj.optString("job_type", "Full-Time"),
+                isRemote = obj.optInt("is_remote", 0) == 1 || obj.optBoolean("is_remote", false),
+                isNew = obj.optInt("is_new", 0) == 1 || obj.optBoolean("is_new", false),
+                isFeatured = obj.optInt("is_featured", 0) == 1 || obj.optBoolean("is_featured", false),
+                applicants = obj.optInt("applicants", 12),
+                applyUrl = obj.optString("apply_url", "https://google.com"),
+                description = obj.optString("description", ""),
+                skills = skillsList,
+                postedDaysAgo = obj.optInt("postedDaysAgo", 1),
+                applicantAvatars = avatarsList
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing job: ${e.message}")
+            throw e
+        }
+    }
+
+    suspend fun getCareerResourceById(id: Int): CareerResource? {
+        val resources = getCareerResources()
+        return resources.find { it.id == id }
+    }
 }
+

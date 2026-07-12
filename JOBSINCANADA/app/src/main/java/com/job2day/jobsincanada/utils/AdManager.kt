@@ -120,22 +120,7 @@ object AdManager {
     }
 
     fun showWebviewAd(activity: Activity, onAdDismissed: () -> Unit) {
-        if (!isInterstitialAdReady()) {
-            onAdDismissed()
-            return
-        }
-        if (isShowingAd) {
-            onAdDismissed()
-            return
-        }
-        if (!canShowInterstitial()) {
-            onAdDismissed()
-            return
-        }
-        pendingDismissCallback = onAdDismissed
-        isShowingAd = true
-        recordInterstitial()
-        _showInterstitial.value = true
+        onAdDismissed()
     }
 
     fun dismissInterstitial() {

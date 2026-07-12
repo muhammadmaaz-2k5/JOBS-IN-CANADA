@@ -578,14 +578,7 @@ fun JobSearchScreen(
                         SearchJobCard(
                             job = job,
                             onTap = {
-                                val activity = context.findActivity()
-                                if (activity != null) {
-                                    com.job2day.jobsincanada.utils.AdManager.showWebviewAd(activity) {
-                                        onNavigateToJobDetail(job)
-                                    }
-                                } else {
-                                    onNavigateToJobDetail(job)
-                                }
+                                onNavigateToJobDetail(job)
                             },
                             onBookmarkToggle = {
                                 BookmarkService.toggleSave(context, job.id)

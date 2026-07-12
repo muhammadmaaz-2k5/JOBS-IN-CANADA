@@ -542,14 +542,7 @@ fun HomeScreen(
                         FeaturedJobCard(
                             job = job,
                             onTap = {
-                                val activity = context.findActivity()
-                                if (activity != null) {
-                                    com.job2day.jobsincanada.utils.AdManager.showWebviewAd(activity) {
-                                        onNavigateToJobDetail(job)
-                                    }
-                                } else {
-                                    onNavigateToJobDetail(job)
-                                }
+                                onNavigateToJobDetail(job)
                             },
                             onBookmarkToggle = {
                                 BookmarkService.toggleSave(context, job.id)
@@ -594,14 +587,7 @@ fun HomeScreen(
                         RecommendedJobCard(
                             job = job,
                             onTap = {
-                                val activity = context.findActivity()
-                                if (activity != null) {
-                                    com.job2day.jobsincanada.utils.AdManager.showWebviewAd(activity) {
-                                        onNavigateToJobDetail(job)
-                                    }
-                                } else {
-                                    onNavigateToJobDetail(job)
-                                }
+                                onNavigateToJobDetail(job)
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -708,13 +694,6 @@ fun HomeScreen(
                     }
                 )
             }
-
-            com.job2day.jobsincanada.ui.components.InlineBannerAd(
-                placement = "home_middle",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
 
             // 5. Career Resources Section
             if (careerResources.isNotEmpty()) {

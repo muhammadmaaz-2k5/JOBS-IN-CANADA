@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.job2day.jobsincanada.data.JobListing
 import com.job2day.jobsincanada.service.BookmarkService
 import com.job2day.jobsincanada.ui.components.CompanyLogo
-import com.job2day.jobsincanada.ui.components.InlineBannerAd
+import com.job2day.jobsincanada.ui.components.AdCardRow
 import com.job2day.jobsincanada.ui.components.StatusBadge
 import com.job2day.jobsincanada.ui.components.parseHexColor
 import com.job2day.jobsincanada.ui.theme.Typography
@@ -376,9 +376,9 @@ fun JobDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Ad 1 (Metrics / Premium Action Bar)
-                    InlineBannerAd(
-                        placement = "detail_1",
+                    // Ad row containing 4 auto-resizing small card ads
+                    AdCardRow(
+                        placements = listOf("detail_1", "detail_2", "detail_3", "detail_4"),
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
@@ -429,11 +429,6 @@ fun JobDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Ad 2 (Between Description and Qualifications)
-                    InlineBannerAd(
-                        placement = "detail_2",
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
 
                     // Qualifications Card
                     Card(
@@ -508,11 +503,6 @@ fun JobDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Ad 3 (Between Qualifications and Skills)
-                    InlineBannerAd(
-                        placement = "detail_3",
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
 
                     // Skills Chips Card
                     Card(
@@ -558,9 +548,9 @@ fun JobDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Ad 4 (Between Skills and About Company)
-                    InlineBannerAd(
-                        placement = "detail_4",
+                    // Ad row containing 4 auto-resizing small card ads
+                    AdCardRow(
+                        placements = listOf("detail_5", "detail_6", "detail_7", "detail_8"),
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
@@ -592,9 +582,9 @@ fun JobDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Ad 5 (Below About Company)
-                    InlineBannerAd(
-                        placement = "detail_5",
+                    // Ad row containing 2 auto-resizing small card ads showing at the end
+                    AdCardRow(
+                        placements = listOf("detail_9", "detail_10"),
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
