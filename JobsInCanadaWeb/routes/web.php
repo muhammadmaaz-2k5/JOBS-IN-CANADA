@@ -7,11 +7,14 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\JobListingController;
 use App\Http\Controllers\Admin\LogoController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ProvinceController;
 use App\Http\Controllers\Admin\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('admin.dashboard'));
+
+Route::view('/privacy', 'privacy')->name('privacy');
 
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.submit');
@@ -31,6 +34,12 @@ Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('logos', LogoController::class);
     Route::resource('career-resources', CareerResourceController::class);
 
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
+    Route::get('notifications/job-details/{job}', [NotificationController::class, 'getJobDetails'])->name('notifications.job-details');
+    Route::post('notifications/send-random', [NotificationController::class, 'sendRandom'])->name('notifications.send-random');
+
     Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
 });
+

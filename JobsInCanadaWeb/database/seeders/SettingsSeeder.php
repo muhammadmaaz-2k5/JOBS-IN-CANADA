@@ -14,5 +14,9 @@ class SettingsSeeder extends Seeder
         SiteSetting::set('ads_enabled', 'false');
         SiteSetting::set('enable_webview_ads', 'false');
         SiteSetting::set('webview_ad_url', 'https://nazaarabox.com');
+        for ($i = 1; $i <= 10; $i++) {
+            SiteSetting::set("enable_ad_detail_$i", "true");
+            SiteSetting::set("ad_url_detail_$i", "");
+        }
     }
 }

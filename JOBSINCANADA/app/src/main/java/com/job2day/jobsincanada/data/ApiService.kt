@@ -12,12 +12,12 @@ import java.net.URL
 
 object ApiService {
     private const val TAG = "ApiService"
-    private var baseUrl: String = "http://10.0.2.2:8000/api"
+    private var baseUrl: String = "https://moviebox.nazaarabox.com/api"
     var adsEnabled: Boolean = false
 
     fun initialize(context: android.content.Context) {
         val prefs = context.getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
-        baseUrl = prefs.getString("base_url", "http://10.0.2.2:8000/api") ?: "http://10.0.2.2:8000/api"
+        baseUrl = prefs.getString("base_url", "https://moviebox.nazaarabox.com/api") ?: "https://moviebox.nazaarabox.com/api"
         Log.d(TAG, "Initialized API Service with Base URL: $baseUrl")
     }
 

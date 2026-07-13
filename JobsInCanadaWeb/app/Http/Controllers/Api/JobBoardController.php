@@ -159,6 +159,27 @@ class JobBoardController extends Controller
             'ads_enabled' => SiteSetting::get('ads_enabled', 'false'),
             'enable_webview_ads' => SiteSetting::get('enable_webview_ads', 'false'),
             'webview_ad_url' => SiteSetting::get('webview_ad_url', 'https://nazaarabox.com'),
+            
+            'enable_ad_detail_1' => SiteSetting::get('enable_ad_detail_1', 'true'),
+            'ad_url_detail_1' => SiteSetting::get('ad_url_detail_1', ''),
+            'enable_ad_detail_2' => SiteSetting::get('enable_ad_detail_2', 'true'),
+            'ad_url_detail_2' => SiteSetting::get('ad_url_detail_2', ''),
+            'enable_ad_detail_3' => SiteSetting::get('enable_ad_detail_3', 'true'),
+            'ad_url_detail_3' => SiteSetting::get('ad_url_detail_3', ''),
+            'enable_ad_detail_4' => SiteSetting::get('enable_ad_detail_4', 'true'),
+            'ad_url_detail_4' => SiteSetting::get('ad_url_detail_4', ''),
+            'enable_ad_detail_5' => SiteSetting::get('enable_ad_detail_5', 'true'),
+            'ad_url_detail_5' => SiteSetting::get('ad_url_detail_5', ''),
+            'enable_ad_detail_6' => SiteSetting::get('enable_ad_detail_6', 'true'),
+            'ad_url_detail_6' => SiteSetting::get('ad_url_detail_6', ''),
+            'enable_ad_detail_7' => SiteSetting::get('enable_ad_detail_7', 'true'),
+            'ad_url_detail_7' => SiteSetting::get('ad_url_detail_7', ''),
+            'enable_ad_detail_8' => SiteSetting::get('enable_ad_detail_8', 'true'),
+            'ad_url_detail_8' => SiteSetting::get('ad_url_detail_8', ''),
+            'enable_ad_detail_9' => SiteSetting::get('enable_ad_detail_9', 'true'),
+            'ad_url_detail_9' => SiteSetting::get('ad_url_detail_9', ''),
+            'enable_ad_detail_10' => SiteSetting::get('enable_ad_detail_10', 'true'),
+            'ad_url_detail_10' => SiteSetting::get('ad_url_detail_10', ''),
         ]);
     }
 

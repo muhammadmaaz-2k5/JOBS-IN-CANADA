@@ -195,12 +195,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleNotificationRoute(intent: Intent?) {
-        val route = intent?.getStringExtra("route") ?: return
+        if (intent == null) return
+        val route = intent.getStringExtra("route") ?: intent.getStringExtra("screen") ?: return
         intent.removeExtra("route")
+        intent.removeExtra("screen")
 
         val data = mutableMapOf<String, String>()
         intent.extras?.keySet()?.forEach { key ->
-            if (key != "route") {
+            if (key != "route" && key != "screen") {
                 intent.getStringExtra(key)?.let { value ->
                     data[key] = value
                 }

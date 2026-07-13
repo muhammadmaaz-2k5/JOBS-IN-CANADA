@@ -55,6 +55,28 @@
             </div>
         </div>
 
+        <h3 style="margin-top:28px; margin-bottom:6px; font-size:18px;">Job Details Page Ads</h3>
+        <p class="muted" style="margin-top:0; margin-bottom:18px;">Configure the status and unique URLs for the 10 dynamic webview ad placements shown on the job details screen.</p>
+        
+        <div class="form-grid">
+            @for ($i = 1; $i <= 10; $i++)
+                <div class="field">
+                    <label for="enable_ad_detail_{{ $i }}">Ad #{{ $i }} Status</label>
+                    <select id="enable_ad_detail_{{ $i }}" name="enable_ad_detail_{{ $i }}">
+                        <option value="true" {{ old("enable_ad_detail_$i", $enableAdDetail[$i]) == 'true' ? 'selected' : '' }}>Enabled</option>
+                        <option value="false" {{ old("enable_ad_detail_$i", $enableAdDetail[$i]) == 'false' ? 'selected' : '' }}>Disabled</option>
+                    </select>
+                    @error("enable_ad_detail_$i")<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
+                </div>
+                
+                <div class="field">
+                    <label for="ad_url_detail_{{ $i }}">Ad #{{ $i }} Custom URL</label>
+                    <input type="url" id="ad_url_detail_{{ $i }}" name="ad_url_detail_{{ $i }}" value="{{ old("ad_url_detail_$i", $adUrlDetail[$i]) }}" placeholder="Leave blank to use global URL">
+                    @error("ad_url_detail_$i")<span class="hint" style="color:var(--danger)">{{ $message }}</span>@enderror
+                </div>
+            @endfor
+        </div>
+
         <div class="actions" style="margin-top:22px;">
             <button class="btn btn-primary" type="submit">Save Settings</button>
         </div>

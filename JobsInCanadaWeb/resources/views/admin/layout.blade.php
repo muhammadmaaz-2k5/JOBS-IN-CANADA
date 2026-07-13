@@ -46,10 +46,15 @@
             </a>
 
             <div class="nav-label">System</div>
+            <a class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Notifications
+            </a>
             <a class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 8h2l1.5-3 2.5 5 2-4 2 4 2.5-5L19 8h1v8h-2l-1.5 3-2.5-5-2 4-2-4-2.5 5L5 16H4z"/></svg>
                 Settings
             </a>
+
         </nav>
         <div class="user-box">
             <strong>{{ auth()->user()->name }}</strong>
